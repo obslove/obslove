@@ -47,6 +47,9 @@ ContentPage {
                     Config.options.audio.protection.maxAllowedIncrease = value;  
                 }  
             }  
+        }  
+        ConfigRow {  
+            enabled: Config.options.audio.protection.enable  
             ConfigSpinBox {  
                 icon: "vertical_align_top"  
                 text: Translation.tr("Volume limit")  
@@ -66,7 +69,6 @@ ContentPage {
         title: Translation.tr("Battery")  
   
         ConfigRow {  
-            uniform: true  
             ConfigSpinBox {  
                 icon: "warning"  
                 text: Translation.tr("Low warning")  
@@ -78,6 +80,8 @@ ContentPage {
                     Config.options.battery.low = value;  
                 }  
             }  
+        }  
+        ConfigRow {  
             ConfigSpinBox {  
                 icon: "dangerous"  
                 text: Translation.tr("Critical warning")  
@@ -91,8 +95,7 @@ ContentPage {
             }  
         }  
         ConfigRow {  
-            uniform: false  
-            Layout.fillWidth: false  
+            uniform: true  
             ConfigSwitch {  
                 buttonIcon: "pause"  
                 text: Translation.tr("Automatic suspend")  
