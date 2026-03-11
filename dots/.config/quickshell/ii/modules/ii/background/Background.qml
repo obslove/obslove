@@ -146,7 +146,42 @@ Variants {
             }
         }
 
+        readonly property bool mediaModeEnabled: Config.options.background.mediaMode.enable
+        readonly property bool mediaModePerMonitor: Config.options.background.mediaMode.togglePerMonitor
+        property bool localMediaModeEnabled: false
         property bool mediaModeOpen: mediaModeLoader.active && MprisController.activePlayer
+        function setMediaModeLoaderActive(enabled) {
+            if (mediaModeLoader.active === enabled) return
+            mediaModeLoader.active = enabled
+            LyricsService.mediaModeOpenCount = Math.max(0, LyricsService.mediaModeOpenCount + (enabled ? 1 : -1))
+        }
+        function syncMediaModeEnabledState() {
+            if (mediaModePerMonitor) {
+                setMediaModeLoaderActive(localMediaModeEnabled)
+                return
+            }
+            localMediaModeEnabled = mediaModeEnabled
+            setMediaModeLoaderActive(mediaModeEnabled)
+        }
+        Component.onCompleted: {
+            localMediaModeEnabled = mediaModeEnabled
+            syncMediaModeEnabledState()
+        }
+        Component.onDestruction: {
+            if (mediaModeLoader.active) {
+                LyricsService.mediaModeOpenCount = Math.max(0, LyricsService.mediaModeOpenCount - 1)
+            }
+        }
+        onMediaModeEnabledChanged: {
+            if (mediaModePerMonitor) return
+            syncMediaModeEnabledState()
+        }
+        onMediaModePerMonitorChanged: {
+            if (mediaModePerMonitor) {
+                localMediaModeEnabled = mediaModeLoader.active
+            }
+            syncMediaModeEnabledState()
+        }
         onMediaModeOpenChanged: {
             if (!mediaModeOpen) {
                 Wallpapers.apply(Config.options.background.wallpaperPath)
@@ -376,9 +411,13 @@ Variants {
             description: "Toggles media mode on press"
 
             onPressed: {
-                if (!monitor.focused && Config.options.background.mediaMode.togglePerMonitor) return
-                mediaModeLoader.active = !mediaModeLoader.active
-                LyricsService.mediaModeOpenCount += mediaModeLoader.active ? 1 : -1
+                if (!monitor.focused && mediaModePerMonitor) return
+                if (mediaModePerMonitor) {
+                    localMediaModeEnabled = !localMediaModeEnabled
+                    syncMediaModeEnabledState()
+                    return
+                }
+                Config.options.background.mediaMode.enable = !Config.options.background.mediaMode.enable
             }
         }
         

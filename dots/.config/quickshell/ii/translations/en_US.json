@@ -631,5 +631,7 @@
   "Wallpaper blur opacity": "Wallpaper blur opacity",
   "Uses compositor blur through bar, sidebars and popups": "Uses compositor blur through bar, sidebars and popups",
   "Uses compositor blur through dock": "Uses compositor blur through dock",
-  "Uses compositor blur through overview": "Uses compositor blur through overview"
+  "Uses compositor blur through overview": "Uses compositor blur through overview",
+  "Switch button shows lyrics": "Switch button shows lyrics",
+  "When enabled, the 360 button opens lyrics instead of switching players": "When enabled, the 360 button opens lyrics instead of switching players"
 }

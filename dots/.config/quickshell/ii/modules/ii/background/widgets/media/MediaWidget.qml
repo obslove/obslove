@@ -24,24 +24,32 @@ AbstractBackgroundWidget {
     readonly property bool useAlbumColors: Config.options.background.widgets.media.useAlbumColors
     readonly property bool useDynamicColors: root.useAlbumColors && root.currentPlayer != null 
     readonly property bool showPreviousToggle: Config.options.background.widgets.media.showPreviousToggle
+    readonly property bool switchShowsLyrics: Config.options.background.widgets.media.switchShowsLyrics
+    readonly property bool lyricsFeatureEnabled: Config.options.background.widgets.media.lyrics.enable
+    readonly property string lyricsStyle: Config.options.background.widgets.media.lyrics.style
+    readonly property bool useLyricsGradientMask: Config.options.background.widgets.media.lyrics.useGradientMask
     readonly property bool hideAllButtons: Config.options.background.widgets.media.hideAllButtons
     readonly property bool showRestButtons: hideAllButtons ? hovering : true
+    readonly property bool showSwitchButton: hovering
+    readonly property bool lyricsEnabled: Config.options.lyricsService.enable && (Config.options.lyricsService.enableGenius || Config.options.lyricsService.enableLrclib)
+    readonly property bool hasPlainLyrics: LyricsService.geniusHasLyrics && LyricsService.plainLyrics.length > 0
+    readonly property bool showingLyricsView: root.lyricsEnabled && root.lyricsFeatureEnabled && root.showLyrics
 
     readonly property var playerList: MprisController.players
-
-    // not using for now, but could be useful in the future 
-    property var filteredPlayerList: playerList.filter(player => player != null && player.trackAlbum != "")
+    readonly property var filteredPlayerList: root.playerList
     
     property MprisPlayer currentPlayer : MprisController.activePlayer
-    property var artUrl: currentPlayer?.trackArtUrl
+    property string artUrl: currentPlayer?.trackArtUrl ?? ""
     property string artDownloadLocation: Directories.coverArt
-    property string artFileName: Qt.md5(artUrl)
-    property string artFilePath: `${artDownloadLocation}/${artFileName}`
+    property string artFileName: artUrl.length > 0 ? Qt.md5(artUrl) : ""
+    property string artFilePath: artFileName.length > 0 ? `${artDownloadLocation}/${artFileName}` : ""
 
     property real widgetSize: 200
     property real controlsSize: 55
     property real buttonIconSize: 30
-    property bool showSwitchButton: false
+    property bool showLyrics: false
+    readonly property color lyricsHighlightColor: "white"
+    readonly property color lyricsSubtextColor: Qt.rgba(1, 1, 1, 0.45)
 
     property color artDominantColor: ColorUtils.mix((colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary), Appearance.colors.colPrimaryContainer, 0.8) || Appearance.m3colors.m3secondaryContainer
     property QtObject blendedColors: AdaptedMaterialScheme {
@@ -93,12 +101,49 @@ AbstractBackgroundWidget {
     }
 
     onArtFilePathChanged: updateArt()
+    onLyricsFeatureEnabledChanged: {
+        if (!root.lyricsFeatureEnabled) {
+            root.showLyrics = false
+        } else {
+            root.currentPlayer = MprisController.activePlayer
+        }
+    }
+    onSwitchShowsLyricsChanged: {
+        if (!root.switchShowsLyrics) {
+            root.showLyrics = false
+        }
+    }
 
     function nextPlayer() {
-        root.currentPlayer = root.playerList[(root.playerList.indexOf(root.currentPlayer) + 1) % root.playerList.length]
+        const players = root.playerList ?? [];
+        if (players.length === 0) {
+            root.currentPlayer = MprisController.activePlayer;
+            return;
+        }
+
+        const currentIndex = players.indexOf(root.currentPlayer);
+        root.currentPlayer = players[(currentIndex + 1 + players.length) % players.length];
+    }
+
+    function handleSwitchButton() {
+        if (root.switchShowsLyrics && root.lyricsEnabled && root.lyricsFeatureEnabled && MprisController.activePlayer != null) {
+            root.currentPlayer = MprisController.activePlayer
+            root.showLyrics = !root.showLyrics
+            if (root.showLyrics) {
+                LyricsService.initiliazeLyrics()
+            }
+            return
+        }
+        root.showLyrics = false
+        root.nextPlayer()
     }
 
     function updateArt() {
+        if (root.artUrl.length === 0 || root.artFilePath.length === 0) {
+            root.downloaded = false
+            coverArtDownloader.running = false
+            return
+        }
         coverArtDownloader.targetFile = root.artUrl 
         coverArtDownloader.artFilePath = root.artFilePath
         root.downloaded = false
@@ -111,7 +156,7 @@ AbstractBackgroundWidget {
         property string artFilePath: root.artFilePath
         command: [ "bash", "-c", `[ -f ${artFilePath} ] || curl -sSL '${targetFile}' -o '${artFilePath}'` ]
         onExited: (exitCode, exitStatus) => {
-            root.downloaded = true
+            root.downloaded = exitCode === 0 && root.artFilePath.length > 0
         }
     }
 
@@ -139,6 +184,14 @@ AbstractBackgroundWidget {
         rescaleSize: 1 // Rescale to 1x1 pixel for faster processing
     }
 
+    Connections {
+        target: MprisController
+        function onActivePlayerChanged() {
+            if (!root.lyricsFeatureEnabled) return
+            root.currentPlayer = MprisController.activePlayer
+        }
+    }
+
     Item {
         id: contentItem
 
@@ -151,7 +204,7 @@ AbstractBackgroundWidget {
             anchors.fill: parent
             source: root.displayedArtFilePath
             sourceSize.width: contentItem.implicitWidth
-            sourceSize.height: sourceSize.width
+            sourceSize.height: contentItem.implicitWidth
             fillMode: Image.PreserveAspectCrop
             cache: false
             antialiasing: true
@@ -176,7 +229,7 @@ AbstractBackgroundWidget {
                 bottom: parent.bottom
             }
             z: 3
-            shown: root.hovering
+            shown: root.showSwitchButton
             sourceComponent: ControlButton {
                 colBackground: root.dynamicColors.colPrimaryBackground
                 colBackgroundHover: root.dynamicColors.colPrimaryBackgroundHover
@@ -184,7 +237,7 @@ AbstractBackgroundWidget {
                 symbolColor: root.dynamicColors.colSecondary
                 symbolText: "360"
                 onClicked: {
-                    root.nextPlayer()
+                    root.handleSwitchButton()
                 }
             }
         }
@@ -229,6 +282,11 @@ AbstractBackgroundWidget {
                 fillMode: Image.PreserveAspectCrop
                 cache: false
                 antialiasing: true
+                opacity: root.showingLyricsView ? 0 : 1
+
+                Behavior on opacity {
+                    animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
+                }
 
                 width: size
                 height: size
@@ -256,8 +314,105 @@ AbstractBackgroundWidget {
             
             }
 
+            FadeLoader {
+                z: 2
+                shown: root.showingLyricsView
+                anchors.fill: parent
+                sourceComponent: Item {
+                    id: lyricsPanel
+                    readonly property bool hasSyncedLines: LyricsService.hasSyncedLines
+                    readonly property bool hasLyricsContent: hasSyncedLines || root.hasPlainLyrics
+                    property int sideMargin: 12
+
+                    Component.onCompleted: LyricsService.initiliazeLyrics()
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: root.dynamicColors.colPrimaryBackground
+                    }
+
+                    StyledText {
+                        visible: !lyricsPanel.hasLyricsContent || !root.lyricsFeatureEnabled
+                        width: parent.width - 36
+                        anchors.centerIn: parent
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        elide: Text.ElideRight
+                        color: root.lyricsHighlightColor
+                        text: `${StringUtils.cleanMusicTitle(root.currentPlayer?.trackTitle) || Translation.tr("No media")}${root.currentPlayer?.trackArtist ? ' • ' + root.currentPlayer.trackArtist : ''}`
+                    }
+
+                    Loader {
+                        active: root.lyricsFeatureEnabled && lyricsPanel.hasLyricsContent
+                        anchors.fill: parent
+                        sourceComponent: Item {
+                            anchors.fill: parent
+
+                            Loader {
+                                active: lyricsPanel.hasSyncedLines && root.lyricsStyle == "static"
+                                anchors.fill: parent
+                                sourceComponent: LyricsStatic {
+                                    anchors.fill: parent
+                                    anchors.margins: lyricsPanel.sideMargin
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    wrapMode: Text.WordWrap
+                                    font.pixelSize: Appearance.font.pixelSize.normal * 1.15
+                                    color: root.lyricsHighlightColor
+                                    elide: Text.ElideNone
+                                }
+                            }
+
+                            Loader {
+                                active: lyricsPanel.hasSyncedLines && root.lyricsStyle == "scroller"
+                                anchors.fill: parent
+                                sourceComponent: LyricScroller {
+                                    anchors.fill: parent
+                                    anchors.margins: lyricsPanel.sideMargin
+                                    defaultLyricsSize: Appearance.font.pixelSize.normal * 0.95
+                                    useGradientMask: root.useLyricsGradientMask
+                                    halfVisibleLines: 2
+                                    downScale: 0.98
+                                    rowHeight: Math.max(36, Math.floor(height / 3))
+                                    gradientDensity: 0.25
+                                    textAlign: "center"
+                                    activeTextColor: root.lyricsHighlightColor
+                                    inactiveTextColor: root.lyricsSubtextColor
+                                    gradientTextColor: root.lyricsSubtextColor
+                                }
+                            }
+
+                            Loader {
+                                active: !lyricsPanel.hasSyncedLines && root.hasPlainLyrics
+                                anchors.fill: parent
+                                sourceComponent: Flickable {
+                                    anchors.fill: parent
+                                    anchors.margins: lyricsPanel.sideMargin
+                                    clip: true
+                                    contentHeight: lyricsText.implicitHeight
+                                    boundsBehavior: Flickable.StopAtBounds
+
+                                    StyledText {
+                                        id: lyricsText
+                                        width: parent.width
+                                        text: LyricsService.plainLyrics
+                                        color: root.lyricsHighlightColor
+                                        font.pixelSize: Appearance.font.pixelSize.normal
+                                        wrapMode: Text.Wrap
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignTop
+                                        lineHeight: 1.35
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             RadialWaveVisualizer {
-                z: 1
+                z: root.showingLyricsView ? 0 : 1
                 id: visualizer
                 anchors.fill: parent
                 roundedPolygon: artBackground.roundedPolygon
@@ -289,7 +444,7 @@ AbstractBackgroundWidget {
                 symbolText: root.currentPlayer?.isPlaying ? "pause" : "play_arrow"
                 symbolColor: useAlbumColors ?  blendedColors.colTertiary : Appearance.colors.colTertiary
                 onClicked: {
-                    root.currentPlayer.togglePlaying()
+                    root.currentPlayer?.togglePlaying()
                 }
             }
         }
@@ -326,7 +481,7 @@ AbstractBackgroundWidget {
                         symbolColor: root.dynamicColors.colSecondary
                         symbolText: "skip_previous"
                         onClicked: {
-                            currentPlayer.previous()
+                            currentPlayer?.previous()
                         }
                     }
                 }
@@ -340,7 +495,7 @@ AbstractBackgroundWidget {
                     symbolColor: root.dynamicColors.colSecondary
                     symbolText: "skip_next"
                     onClicked: {
-                        currentPlayer.next()
+                        currentPlayer?.next()
                     }
                 }
 
