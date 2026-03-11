@@ -1098,10 +1098,10 @@ ContentPage {
             }
 
             ConfigRow {
-                uniform: true
                 ConfigSwitch {
                     buttonIcon: "lyrics"
                     text: Translation.tr("Switch button shows lyrics")
+                    Layout.fillWidth: true
                     checked: Config.options.background.widgets.media.switchShowsLyrics
                     onCheckedChanged: {
                         Config.options.background.widgets.media.switchShowsLyrics = checked;
@@ -1110,8 +1110,11 @@ ContentPage {
                         text: Translation.tr("When enabled, the 360 button opens lyrics instead of switching players")
                     }
                 }
+            }
 
+            ConfigRow {
                 ConfigSwitch {
+                    Layout.fillWidth: true
                     enabled: Config.options.background.widgets.media.lyrics.style === "scroller"
                     buttonIcon: "gradient"
                     text: Translation.tr("Use gradient mask")
@@ -1119,10 +1122,6 @@ ContentPage {
                     onCheckedChanged: {
                         Config.options.background.widgets.media.lyrics.useGradientMask = checked;
                     }
-                }
-
-                Item {
-                    Layout.fillWidth: true
                 }
             }
         }
