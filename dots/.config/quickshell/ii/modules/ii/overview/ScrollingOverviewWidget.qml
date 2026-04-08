@@ -245,6 +245,17 @@ Item {
                             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                         }
                     }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton
+                        onClicked: {
+                            if (root.draggingFromWindowAddress !== "")
+                                return;
+                            GlobalStates.overviewOpen = false;
+                            Hyprland.dispatch(`workspace ${wsId}`);
+                        }
+                    }
                     
                     DropArea { // Workspace drop
                         anchors.fill: parent
