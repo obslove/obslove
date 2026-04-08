@@ -41,7 +41,10 @@ Variants {
         property int lastWorkspaceId: relevantWindows[relevantWindows.length - 1]?.workspace.id || 10
 
         // Wallpaper
-        property bool wallpaperIsVideo: Config.options.background.wallpaperPath.endsWith(".mp4") || Config.options.background.wallpaperPath.endsWith(".webm") || Config.options.background.wallpaperPath.endsWith(".mkv") || Config.options.background.wallpaperPath.endsWith(".avi") || Config.options.background.wallpaperPath.endsWith(".mov")
+        property string wallpaperPathRaw: Config.options.background.wallpaperPath
+        property string wallpaperPathLower: wallpaperPathRaw.toLowerCase()
+        property bool wallpaperIsVideo: wallpaperPathLower.endsWith(".mp4") || wallpaperPathLower.endsWith(".webm") || wallpaperPathLower.endsWith(".mkv") || wallpaperPathLower.endsWith(".avi") || wallpaperPathLower.endsWith(".mov")
+        property bool wallpaperIsGif: wallpaperPathLower.endsWith(".gif")
         property string wallpaperPath: wallpaperIsVideo ? Config.options.background.thumbnailPath : Config.options.background.wallpaperPath
         property bool wallpaperSafetyTriggered: {
             const enabled = Config.options.workSafety.enable.wallpaper;
@@ -120,12 +123,14 @@ Variants {
         // Wallpaper zoom scale
         function updateZoomScale() {
             getWallpaperSizeProc.path = bgRoot.wallpaperPath;
+            getWallpaperSizeProc.identifyPath = bgRoot.wallpaperIsGif ? `${bgRoot.wallpaperPath}[0]` : bgRoot.wallpaperPath;
             getWallpaperSizeProc.running = true;
         }
         Process {
             id: getWallpaperSizeProc
             property string path: bgRoot.wallpaperPath
-            command: ["magick", "identify", "-format", "%w %h", path]
+            property string identifyPath: bgRoot.wallpaperPath
+            command: ["magick", "identify", "-format", "%w %h", identifyPath]
             stdout: StdioCollector {
                 id: wallpaperSizeOutputCollector
                 onStreamFinished: {
@@ -178,8 +183,10 @@ Variants {
             // Wallpaper
             TransitionImage {
                 id: wallpaper
-                visible: opacity > 0 && !blurLoader.active && !bgRoot.wallpaperIsVideo
-                opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo) ? 1 : 0
+                visible: opacity > 0 && !blurLoader.active && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperIsGif
+                opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperIsGif) ? 1 : 0
+                cache: false
+                smooth: false
                 // Range = groups that workspaces span on
                 property int chunkSize: Config?.options.bar.workspaces.shown ?? 10
                 property int lower: Math.floor(bgRoot.firstWorkspaceId / chunkSize) * chunkSize
@@ -241,10 +248,45 @@ Variants {
                 height: bgRoot.wallpaperHeight / bgRoot.wallpaperToScreenRatio * bgRoot.effectiveWallpaperScale
             }
 
+            AnimatedImage {
+                id: animatedWallpaper
+                visible: opacity > 0 && !blurLoader.active && bgRoot.wallpaperIsGif
+                opacity: (status === Image.Ready && bgRoot.wallpaperIsGif) ? 1 : 0
+                playing: visible
+                cache: false
+                smooth: false
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                x: wallpaper.x
+                y: wallpaper.y
+                source: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
+                sourceSize {
+                    width: animatedWallpaper.width * bgRoot.monitor.scale
+                    height: animatedWallpaper.height * bgRoot.monitor.scale
+                }
+                width: wallpaper.width
+                height: wallpaper.height
+                Behavior on x {
+                    NumberAnimation {
+                        duration: 600
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on y {
+                    NumberAnimation {
+                        duration: 600
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on opacity {
+                    animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
+                }
+            }
+
             Loader {
                 id: blurLoader
                 active: Config.options.lock.blur.enable && (GlobalStates.screenLocked || scaleAnim.running)
-                anchors.fill: wallpaper
+                anchors.fill: bgRoot.wallpaperIsGif ? animatedWallpaper : wallpaper
                 scale: GlobalStates.screenLocked ? Config.options.lock.blur.extraZoom : 1
                 Behavior on scale {
                     NumberAnimation {
@@ -255,7 +297,7 @@ Variants {
                     }
                 }
                 sourceComponent: GaussianBlur {
-                    source: wallpaper
+                    source: bgRoot.wallpaperIsGif ? animatedWallpaper : wallpaper
                     radius: GlobalStates.screenLocked ? Config.options.lock.blur.radius : 0
                     samples: radius * 2 + 1
 

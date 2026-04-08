@@ -72,6 +72,9 @@ check_and_prompt_upscale() {
         if is_video "$img"; then # Not check resolution for videos, just let em pass
             img_width=$min_width_desired
             img_height=$min_height_desired
+        elif [[ "${img,,}" == *.gif ]]; then
+            img_width=$(identify -format "%w" "${img}[0]" 2>/dev/null)
+            img_height=$(identify -format "%h" "${img}[0]" 2>/dev/null)
         else
             img_width=$(identify -format "%w" "$img" 2>/dev/null)
             img_height=$(identify -format "%h" "$img" 2>/dev/null)

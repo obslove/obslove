@@ -18,6 +18,7 @@ MouseArea {
         const path = fileModelData.fileName.toLowerCase();
         return path.endsWith('.mp4') || path.endsWith('.webm') || path.endsWith('.mkv') || path.endsWith('.avi') || path.endsWith('.mov') || path.endsWith('.m4v') || path.endsWith('.ogv');
     }
+    property bool isGif: fileModelData.fileName.toLowerCase().endsWith('.gif')
     property bool isApi: fileModelData.isApi || false
     property bool useThumbnail: (Images.isValidImageByName(fileModelData.fileName) || root.isVideo) && !root.isApi
     property bool showLoadingIndicator: false
@@ -86,7 +87,37 @@ MouseArea {
                     id: thumbnailImageLoader
                     anchors.fill: parent
                     active: root.useThumbnail && root.shouldLoad
-                    sourceComponent: ThumbnailImage {
+                    sourceComponent: root.isGif ? gifPreviewComponent : thumbnailPreviewComponent
+                }
+
+                Component {
+                    id: gifPreviewComponent
+
+                    AnimatedImage {
+                        cache: false
+                        fillMode: Image.PreserveAspectCrop
+                        clip: true
+                        asynchronous: true
+                        playing: visible && root.containsMouse
+                        source: fileModelData.filePath
+                        sourceSize.width: wallpaperItemColumnLayout.width
+                        sourceSize.height: wallpaperItemColumnLayout.height - wallpaperItemColumnLayout.spacing - wallpaperItemName.height
+
+                        layer.enabled: true
+                        layer.effect: OpacityMask {
+                            maskSource: Rectangle {
+                                width: wallpaperItemImageContainer.width
+                                height: wallpaperItemImageContainer.height
+                                radius: Appearance.rounding.small
+                            }
+                        }
+                    }
+                }
+
+                Component {
+                    id: thumbnailPreviewComponent
+
+                    ThumbnailImage {
                         id: thumbnailImage
                         generateThumbnail: false
                         sourcePath: fileModelData.filePath
