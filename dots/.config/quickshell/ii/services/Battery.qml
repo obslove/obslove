@@ -9,7 +9,7 @@ import Quickshell.Io
 
 Singleton {
     id: root
-    property bool available: UPower.displayDevice.isLaptopBattery
+    property bool available: Config.options.battery.laptop && UPower.displayDevice.isLaptopBattery
     property var chargeState: UPower.displayDevice.state
     property bool isCharging: chargeState == UPowerDeviceState.Charging
     property bool isPluggedIn: isCharging || chargeState == UPowerDeviceState.PendingCharge

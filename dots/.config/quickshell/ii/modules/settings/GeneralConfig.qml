@@ -68,71 +68,132 @@ ContentPage {
         icon: "battery_android_full"  
         title: Translation.tr("Battery")  
   
-        ConfigRow {  
-            uniform: true  
-            ConfigSpinBox {  
-                icon: "warning"  
-                text: Translation.tr("Low warning")  
-                value: Config.options.battery.low  
-                from: 0  
-                to: 100  
-                stepSize: 5  
-                onValueChanged: {  
-                    Config.options.battery.low = value;  
-                }  
-            }  
-            ConfigSpinBox {  
-                icon: "dangerous"  
-                text: Translation.tr("Critical warning")  
-                value: Config.options.battery.critical  
-                from: 0  
-                to: 100  
-                stepSize: 5  
-                onValueChanged: {  
-                    Config.options.battery.critical = value;  
-                }  
-            }  
-        }  
-        ConfigRow {  
-            uniform: false  
-            Layout.fillWidth: false  
-            ConfigSwitch {  
-                buttonIcon: "pause"  
-                text: Translation.tr("Automatic suspend")  
-                checked: Config.options.battery.automaticSuspend  
-                onCheckedChanged: {  
-                    Config.options.battery.automaticSuspend = checked;  
-                }  
-                StyledToolTip {  
-                    text: Translation.tr("Automatically suspends the system when battery is low")  
-                }  
-            }  
-            ConfigSpinBox {  
-                enabled: Config.options.battery.automaticSuspend  
-                text: Translation.tr("at")  
-                value: Config.options.battery.suspend  
-                from: 0  
-                to: 100  
-                stepSize: 5  
-                onValueChanged: {  
-                    Config.options.battery.suspend = value;  
-                }  
-            }  
-        }  
-        ConfigRow {  
-            uniform: true  
-            ConfigSpinBox {  
-                icon: "charger"  
-                text: Translation.tr("Full warning")  
-                value: Config.options.battery.full  
-                from: 0  
-                to: 101  
-                stepSize: 5  
-                onValueChanged: {  
-                    Config.options.battery.full = value;  
-                }  
-            }  
-        }  
+        ConfigSwitch {
+            buttonIcon: "laptop"
+            text: Translation.tr("Laptop")
+            checked: Config.options.battery.laptop
+            onCheckedChanged: {
+                Config.options.battery.laptop = checked;
+            }
+            StyledToolTip {
+                text: Translation.tr("Enables laptop battery warnings and automatic suspend settings")
+            }
+        }
+
+        ConfigRow {
+            visible: Config.options.battery.laptop
+            ConfigSpinBox {
+                icon: "warning"
+                text: Translation.tr("Low warning")
+                value: Config.options.battery.low
+                from: 0
+                to: 100
+                stepSize: 5
+                onValueChanged: {
+                    Config.options.battery.low = value;
+                }
+            }
+        }
+        ConfigRow {
+            visible: Config.options.battery.laptop
+            ConfigSpinBox {
+                icon: "dangerous"
+                text: Translation.tr("Critical warning")
+                value: Config.options.battery.critical
+                from: 0
+                to: 100
+                stepSize: 5
+                onValueChanged: {
+                    Config.options.battery.critical = value;
+                }
+            }
+        }
+        Item {
+            visible: Config.options.battery.laptop
+            Layout.fillWidth: true
+            implicitHeight: controlRow.implicitHeight + 16
+
+            SearchHandler {
+                searchString: suspendLabel.text
+            }
+
+            HighlightOverlay {
+                anchors.fill: parent
+                anchors.topMargin: -2
+                anchors.bottomMargin: -2
+                anchors.leftMargin: -4
+                anchors.rightMargin: -4
+            }
+
+            RowLayout {
+                id: controlRow
+                anchors.fill: parent
+                anchors.leftMargin: 8
+                anchors.rightMargin: 8
+                spacing: 10
+
+                OptionalMaterialSymbol {
+                    icon: "pause"
+                }
+
+                StyledText {
+                    id: suspendLabel
+                    text: Translation.tr("Automatic suspend")
+                    color: Appearance.colors.colOnSecondaryContainer
+                }
+
+                StyledSwitch {
+                    checked: Config.options.battery.automaticSuspend
+                    onCheckedChanged: {
+                        Config.options.battery.automaticSuspend = checked;
+                    }
+                    StyledToolTip {
+                        text: Translation.tr("Automatically suspends the system when battery is low")
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                RowLayout {
+                    visible: Config.options.battery.automaticSuspend
+                    Layout.fillWidth: false
+                    spacing: 8
+
+                    StyledText {
+                        text: Translation.tr("at")
+                        color: Appearance.colors.colOnLayer1
+                    }
+
+                    StyledSpinBox {
+                        Layout.fillWidth: false
+                        value: Config.options.battery.suspend
+                        from: 0
+                        to: 100
+                        stepSize: 5
+                        onValueChanged: {
+                            Config.options.battery.suspend = value;
+                        }
+                    }
+                }
+            }
+        }
+        ConfigRow {
+            visible: Config.options.battery.laptop
+            uniform: true
+            ConfigSpinBox {
+                icon: "charger"
+                text: Translation.tr("Full warning")
+                value: Config.options.battery.full
+                from: 0
+                to: 101
+                stepSize: 5
+                onValueChanged: {
+                    Config.options.battery.full = value;
+                }
+            }
+        }
     }  
   
     ContentSection {  
