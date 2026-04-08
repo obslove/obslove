@@ -78,7 +78,7 @@ Singleton {
             temp.temp += "°C";
             temp.tempFeelsLike += "°C";
         }
-        temp.lastRefresh = DateTime.time + " • " + DateTime.date;
+        temp.lastRefresh = DateTime.formatTime(false) + " • " + DateTime.date;
         root.data = temp;
     }
 

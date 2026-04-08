@@ -337,6 +337,19 @@ ContentPage {
             title: Translation.tr("Digital clock settings")
             tooltip: Translation.tr("Font width and roundness settings are only available for some fonts like Google Sans Flex")
 
+            ConfigSwitch {
+                buttonIcon: "pace"
+                text: Translation.tr("Second precision")
+                enabled: Config.options.time.secondPrecision
+                checked: Config.options.time.secondPrecisionTargets.digitalClock
+                onCheckedChanged: {
+                    Config.options.time.secondPrecisionTargets.digitalClock = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Controls second display for the background digital clock. Requires the global second precision switch.")
+                }
+            }
+
             ConfigRow {
                 uniform: true
                 ConfigSwitch {
@@ -468,6 +481,19 @@ ContentPage {
         ContentSubsection {
             visible: settingsClock.cookiePresent
             title: Translation.tr("Cookie clock settings")
+
+            ConfigSwitch {
+                buttonIcon: "pace"
+                text: Translation.tr("Second precision")
+                enabled: Config.options.time.secondPrecision
+                checked: Config.options.time.secondPrecisionTargets.cookieClock
+                onCheckedChanged: {
+                    Config.options.time.secondPrecisionTargets.cookieClock = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Controls second display for the cookie clock, including center digits, second hand, and rotating date. Requires the global second precision switch.")
+                }
+            }
 
             ConfigSpinBox {
                 enabled: Config.options.background.widgets.clock.cookie.backgroundStyle !== "shape"

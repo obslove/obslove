@@ -16,7 +16,7 @@ Item {
         spacing: 0
 
         Repeater {
-            model: DateTime.time.split(/[: ]/)
+            model: DateTime.formatTime(Config.options.time.secondPrecisionTargets.barClock).split(/[: ]/)
             delegate: StyledText {
                 required property string modelData
                 Layout.alignment: Qt.AlignHCenter

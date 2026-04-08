@@ -10,6 +10,20 @@ import Quickshell.Io
  * A nice wrapper for date and time strings.
  */
 Singleton {
+    function formatTime(showSeconds = false) {
+        const baseFormat = Config.options?.time.format ?? "hh:mm";
+        const wantsSeconds = (Config.options?.time.secondPrecision ?? false) && showSeconds;
+        let effectiveFormat = baseFormat;
+
+        if (wantsSeconds && !baseFormat.includes("s")) {
+            effectiveFormat = baseFormat.replace(/\s+(ap|AP)\b/, ":ss $1");
+            if (effectiveFormat === baseFormat)
+                effectiveFormat = `${baseFormat}:ss`;
+        }
+
+        return Qt.locale().toString(clock.date, effectiveFormat);
+    }
+
     property var clock: SystemClock {
         id: clock
         precision: {
@@ -18,7 +32,6 @@ Singleton {
             return SystemClock.Minutes;
         }
     }
-    property string time: Qt.locale().toString(clock.date, Config.options?.time.format ?? "hh:mm")
     property string shortDate: Qt.locale().toString(clock.date, Config.options?.time.shortDateFormat ?? "dd/MM")
     property string date: Qt.locale().toString(clock.date, Config.options?.time.dateWithYearFormat ?? "dd/MM/yyyy")
     property string longDate: Qt.locale().toString(clock.date, Config.options?.time.dateFormat ?? "dddd, dd/MM")

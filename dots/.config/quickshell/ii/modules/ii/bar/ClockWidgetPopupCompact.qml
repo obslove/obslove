@@ -9,7 +9,7 @@ StyledPopup {
         margins: 20
         iconSize: 100
         icon: "schedule"
-        title: DateTime.time
+        title: DateTime.formatTime(Config.options.time.secondPrecisionTargets.barClock)
         subtitle: Qt.locale().toString(DateTime.clock.date, "MMMM dd, dddd")
     }
 }

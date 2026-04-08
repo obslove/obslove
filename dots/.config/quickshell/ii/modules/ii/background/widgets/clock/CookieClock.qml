@@ -27,7 +27,7 @@ Item {
     property color colMinuteHand: Appearance.colors.colTertiary
     property color colSecondHand: Appearance.colors.colPrimary
 
-    readonly property list<string> clockNumbers: DateTime.time.split(/[: ]/)
+    readonly property list<string> clockNumbers: DateTime.formatTime(Config.options.time.secondPrecisionTargets.cookieClock).split(/[: ]/)
     readonly property int clockHour: parseInt(clockNumbers[0]) % 12
     readonly property int clockMinute: DateTime.clock.minutes
     readonly property int clockSecond: DateTime.clock.seconds
@@ -186,7 +186,7 @@ Item {
     FadeLoader {
         id: secondHandLoader
         z: (Config.options.background.widgets.clock.cookie.secondHandStyle === "line") ? 2 : 3
-        shown: Config.options.time.secondPrecision && Config.options.background.widgets.clock.cookie.secondHandStyle !== "hide"
+        shown: Config.options.time.secondPrecision && Config.options.time.secondPrecisionTargets.cookieClock && Config.options.background.widgets.clock.cookie.secondHandStyle !== "hide"
         anchors.fill: parent
         sourceComponent: SecondHand {
             id: secondHand

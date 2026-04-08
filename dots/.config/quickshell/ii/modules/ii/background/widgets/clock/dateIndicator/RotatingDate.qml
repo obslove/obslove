@@ -23,7 +23,7 @@ Item {
     }
 
     rotation: {
-        if (!Config.options.time.secondPrecision) return 0
+        if (!Config.options.time.secondPrecision || !Config.options.time.secondPrecisionTargets.cookieClock) return 0
         else return (360 / 60 * clockSecond) + 180 - (angleStep / Math.PI * 180 * dateText.length) / 2
     }
 

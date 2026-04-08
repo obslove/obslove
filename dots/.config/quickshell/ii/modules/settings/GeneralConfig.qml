@@ -7,11 +7,11 @@ import qs.modules.common
 import qs.modules.common.functions  
 import qs.modules.common.widgets  
   
-ContentPage {  
+ContentPage {
     id: page
     readonly property int index: 1
     property bool register: parent.register ?? false
-    forceWidth: true  
+    forceWidth: true
   
     Process {  
         id: translationProc  
@@ -414,7 +414,7 @@ ContentPage {
                 Config.options.time.secondPrecision = checked;  
             }  
             StyledToolTip {  
-                text: Translation.tr("Enable if you want clocks to show seconds accurately")  
+                text: Translation.tr("Master switch for second precision. It enables or disables seconds globally without changing the per-clock target selections.")
             }  
         }  
   

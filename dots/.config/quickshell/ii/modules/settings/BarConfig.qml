@@ -14,6 +14,7 @@ ContentPage {
 
     property var componentMap: ({
         "active_window": activeWindow,
+        "clock": clockSettings,
         "music_player": musicPlayer,
         "utility_buttons": utilityButtons,
         "system_tray": systemTray,
@@ -62,6 +63,25 @@ ContentPage {
                 onUpdated: (newList) => {
                     Config.options.bar.layouts.right = newList
                 }
+            }
+        }
+    }
+
+    ContentSection {
+        id: clockSettings
+        icon: "schedule"
+        title: Translation.tr("Clock")
+
+        ConfigSwitch {
+            buttonIcon: "pace"
+            text: Translation.tr("Second precision")
+            enabled: Config.options.time.secondPrecision
+            checked: Config.options.time.secondPrecisionTargets.barClock
+            onCheckedChanged: {
+                Config.options.time.secondPrecisionTargets.barClock = checked;
+            }
+            StyledToolTip {
+                text: Translation.tr("Controls second display for the main bar clock, vertical bar clock, and waffle bar clock. Requires the global second precision switch.")
             }
         }
     }

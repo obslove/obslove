@@ -302,6 +302,22 @@ ContentPage {
             }
         }
         ContentSubsection {
+            title: Translation.tr("Waffle clock")
+
+            ConfigSwitch {
+                buttonIcon: "pace"
+                text: Translation.tr("Second precision")
+                enabled: Config.options.time.secondPrecision
+                checked: Config.options.time.secondPrecisionTargets.waffleLockClock
+                onCheckedChanged: {
+                    Config.options.time.secondPrecisionTargets.waffleLockClock = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Controls second display for the waffle lock clock. Requires the global second precision switch.")
+                }
+            }
+        }
+        ContentSubsection {
             title: Translation.tr("Style: Blurred")
 
             ConfigSwitch {
