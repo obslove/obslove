@@ -769,5 +769,13 @@ ContentPage {
                 Config.options.bar.tooltips.compactPopups = checked;
             }
         }
+        ConfigSwitch {
+            buttonIcon: "left_click"
+            text: Translation.tr("Open sidebars outside buttons")
+            checked: Config.options.bar.tooltips.openSidebarsOutsideButtons
+            onCheckedChanged: {
+                Config.options.bar.tooltips.openSidebarsOutsideButtons = checked;
+            }
+        }
     }
 }

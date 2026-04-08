@@ -94,7 +94,7 @@ Item { // Bar content region
         onScrollUp: Brightness.increaseBrightness()
         onMovedAway: GlobalStates.osdBrightnessOpen = false
         onPressed: event => {
-            if (event.button === Qt.LeftButton)
+            if (event.button === Qt.LeftButton && Config.options.bar.tooltips.openSidebarsOutsideButtons)
                 GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;
         }
 
@@ -238,7 +238,7 @@ Item { // Bar content region
         onScrollUp: Audio.incrementVolume();
         onMovedAway: GlobalStates.osdVolumeOpen = false;
         onPressed: event => {
-            if (event.button === Qt.LeftButton) {
+            if (event.button === Qt.LeftButton && Config.options.bar.tooltips.openSidebarsOutsideButtons) {
                 GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
             }
         }
