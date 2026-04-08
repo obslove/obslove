@@ -34,31 +34,34 @@ ContentPage {
                 text: Translation.tr("Prevents abrupt increments and restricts volume limit")  
             }  
         }  
-        ConfigRow {  
-            enabled: Config.options.audio.protection.enable  
-            ConfigSpinBox {  
-                icon: "arrow_warm_up"  
-                text: Translation.tr("Max allowed increase")  
-                value: Config.options.audio.protection.maxAllowedIncrease  
-                from: 0  
-                to: 100  
-                stepSize: 2  
-                onValueChanged: {  
-                    Config.options.audio.protection.maxAllowedIncrease = value;  
-                }  
-            }  
-            ConfigSpinBox {  
-                icon: "vertical_align_top"  
-                text: Translation.tr("Volume limit")  
-                value: Config.options.audio.protection.maxAllowed  
-                from: 0  
-                to: 154 // pavucontrol allows up to 153%  
-                stepSize: 2  
-                onValueChanged: {  
-                    Config.options.audio.protection.maxAllowed = value;  
-                }  
-            }  
-        }  
+        ConfigRow {
+            visible: Config.options.audio.protection.enable
+            ConfigSpinBox {
+                icon: "arrow_warm_up"
+                text: Translation.tr("Max allowed increase")
+                value: Config.options.audio.protection.maxAllowedIncrease
+                from: 0
+                to: 100
+                stepSize: 2
+                onValueChanged: {
+                    Config.options.audio.protection.maxAllowedIncrease = value;
+                }
+            }
+        }
+        ConfigRow {
+            visible: Config.options.audio.protection.enable
+            ConfigSpinBox {
+                icon: "vertical_align_top"
+                text: Translation.tr("Volume limit")
+                value: Config.options.audio.protection.maxAllowed
+                from: 0
+                to: 154 // pavucontrol allows up to 153%
+                stepSize: 2
+                onValueChanged: {
+                    Config.options.audio.protection.maxAllowed = value;
+                }
+            }
+        }
     }  
   
     ContentSection {  
