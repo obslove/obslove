@@ -186,7 +186,7 @@ switch() {
         fi
     fi
 
-    read scale screenx screeny screensizey < <(hyprctl monitors -j | jq '.[] | select(.focused) | .scale, .x, .y, .height' | xargs)
+    read -r scale screenx screeny screensizey < <(hyprctl monitors -j | jq '.[] | select(.focused) | .scale, .x, .y, .height' | xargs)
     cursorposx=$(hyprctl cursorpos -j | jq '.x' 2>/dev/null) || cursorposx=960
     cursorposx=$(bc <<< "scale=0; ($cursorposx - $screenx) * $scale / 1")
     cursorposy=$(hyprctl cursorpos -j | jq '.y' 2>/dev/null) || cursorposy=540
@@ -316,9 +316,17 @@ switch() {
     fi
 
     matugen "${matugen_args[@]}"
-    source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
-    python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
-        > "$STATE_DIR"/user/generated/material_colors.scss
+    source "$(eval echo "$ILLOGICAL_IMPULSE_VIRTUAL_ENV")/bin/activate"
+    scss_target="$STATE_DIR/user/generated/material_colors.scss"
+    scss_tmp=$(mktemp "$scss_target.XXXXXX")
+    if python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" > "$scss_tmp"; then
+        mv "$scss_tmp" "$scss_target"
+    else
+        rm -f "$scss_tmp"
+        deactivate
+        echo "Failed to generate material_colors.scss" >&2
+        return 1
+    fi
     "$SCRIPT_DIR"/applycolor.sh
     deactivate
 
@@ -349,7 +357,7 @@ main() {
 
     detect_scheme_type_from_image() {
         local img="$1"
-        source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
+        source "$(eval echo "$ILLOGICAL_IMPULSE_VIRTUAL_ENV")/bin/activate"
         "$SCRIPT_DIR"/scheme_for_image.py "$img" 2>/dev/null | tr -d '\n'
         deactivate
     }
@@ -372,7 +380,7 @@ main() {
                     set_accent_color ""
                     shift 2
                 else
-                    set_accent_color $(hyprpicker --no-fancy)
+                    set_accent_color "$(hyprpicker --no-fancy)"
                     shift
                 fi
                 ;;

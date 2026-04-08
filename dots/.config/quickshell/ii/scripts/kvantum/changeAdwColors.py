@@ -1,14 +1,7 @@
-import re
 import os
+import re
 
-def get_colors_from_scss(scss_file):
-    colors = {}
-    with open(scss_file, 'r') as file:
-        for line in file:
-            match = re.match(r'\$(\w+):\s*(#[0-9A-Fa-f]{6});', line)
-            if match:
-                colors[match.group(1)] = match.group(2)
-    return colors
+from material_colors import load_material_colors
 
 def update_config_colors(config_file, colors, mappings):
     with open(config_file, 'r') as file:
@@ -32,8 +25,6 @@ if __name__ == "__main__":
     xdg_state_home = os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state"))
 
     config_file = os.path.join(xdg_config_home, "Kvantum", "MaterialAdw", "MaterialAdw.kvconfig")
-    scss_file = os.path.join(xdg_state_home, "quickshell", "user", "generated", "material_colors.scss")
-
     # Define your mappings here
     mappings = {
         'window.color': 'background',
@@ -57,15 +48,14 @@ if __name__ == "__main__":
         'progress.indicator.text.color': 'onBackground',
         'text.normal.color': 'onBackground',
         'text.focus.color': 'onBackground',
-        'text.press.color': 'onsecondarycontainer',
-        'text.toggle.color': 'onsecondarycontainer',
+        'text.press.color': 'onSecondaryContainer',
+        'text.toggle.color': 'onSecondaryContainer',
         'text.disabled.color': 'surfaceDim',
 
 
         # Add more mappings as needed
     }
     
-    colors = get_colors_from_scss(scss_file)
+    colors = load_material_colors(xdg_state_home)
     update_config_colors(config_file, colors, mappings)
     print("Config colors updated successfully!")
-

@@ -26,8 +26,12 @@ RippleButton {
 
     readonly property string wallpaperPath: Config.options.background.wallpaperPath
     readonly property string scriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/colors/generate_colors_material.py`)
+    readonly property string applyColorScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/colors/applycolor.sh`)
+    readonly property string materialQtScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/kvantum/materialQT.sh`)
+    readonly property string generatedScssPath: FileUtils.trimFileProtocol(`${Directories.state}/user/generated/material_colors.scss`)
 
     property string fullCommand: `python3 ${root.scriptPath} --path ${root.wallpaperPath} --scheme ${root.colorScheme} --preview`
+    readonly property string reapplyExternalThemesCommand: `${root.applyColorScriptPath} && ${root.materialQtScriptPath}`
 
     // these are not actually primary, secondary and tertiary, they are just the three colors we get from the script
     property color primaryColor: "transparent"
@@ -52,10 +56,10 @@ RippleButton {
     onClicked: {
         if (customTheme) {
             Config.options.appearance.palette.type = root.colorScheme;
-            Quickshell.execDetached(["bash", "-c", `cp ${root.customThemeFilePath} ${Directories.generatedMaterialThemePath}`]);
+            Quickshell.execDetached(["bash", "-c", `cp ${root.customThemeFilePath} ${Directories.generatedMaterialThemePath} && rm -f ${root.generatedScssPath} && ${root.reapplyExternalThemesCommand}`]);
         } else if (builtInTheme) {
             Config.options.appearance.palette.type = root.colorScheme;
-            Quickshell.execDetached(["bash", "-c", `cp ${root.builtInThemeFilePath} ${Directories.generatedMaterialThemePath}`]);
+            Quickshell.execDetached(["bash", "-c", `cp ${root.builtInThemeFilePath} ${Directories.generatedMaterialThemePath} && rm -f ${root.generatedScssPath} && ${root.reapplyExternalThemesCommand}`]);
         } else {
             Config.options.appearance.palette.type = root.colorScheme;
             Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`]);

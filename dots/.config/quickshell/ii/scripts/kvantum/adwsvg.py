@@ -1,16 +1,7 @@
-import re
 import os
+import re
 
-def read_scss(file_path):
-    """Reads an SCSS file and returns a dictionary of color variables."""
-    colors = {}
-    with open(file_path, 'r') as file:
-        for line in file:
-            match = re.match(r'\$(\w+):\s*(#[0-9A-Fa-f]{6});', line.strip())
-            if match:
-                variable_name, color = match.groups()
-                colors[variable_name] = color
-    return colors
+from material_colors import load_material_colors
 
 def update_svg_colors(svg_path, old_to_new_colors, output_path):
     """
@@ -38,12 +29,10 @@ def main():
     xdg_config_home = os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
     xdg_state_home = os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state"))
 
-    scss_file = os.path.join(xdg_state_home, "quickshell", "user", "generated", "material_colors.scss")
     svg_path = os.path.join(xdg_config_home, "Kvantum", "Colloid", "Colloid.svg")
     output_path = os.path.join(xdg_config_home, "Kvantum", "MaterialAdw", "MaterialAdw.svg")
 
-    # Read colors from the SCSS file
-    color_data = read_scss(scss_file)
+    color_data = load_material_colors(xdg_state_home)
 
     # Specify the old colors and map them to new colors from the SCSS file
     old_to_new_colors = {
@@ -76,4 +65,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

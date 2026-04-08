@@ -39,6 +39,8 @@ apply_qt() {
 		cp "$XDG_CONFIG_HOME/Kvantum/Colloid/ColloidDark.kvconfig" "$XDG_CONFIG_HOME/Kvantum/MaterialAdw/MaterialAdw.kvconfig"
 		python "$CONFIG_DIR/scripts/kvantum/adwsvgDark.py"
 	fi
+
+	python "$CONFIG_DIR/scripts/kvantum/changeAdwColors.py"
 }
 
 apply_qt

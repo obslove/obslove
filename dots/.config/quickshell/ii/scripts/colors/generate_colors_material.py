@@ -59,6 +59,47 @@ def boost_chroma_tone (argb: int, chroma: float = 1, tone: float = 1) -> int:
     hct = Hct.from_int(argb)
     return Hct.from_hct(hct.hue, hct.chroma * chroma, hct.tone * tone).to_int()
 
+def monochrome_term_colors(material_colors: dict, darkmode: bool) -> dict:
+    if darkmode:
+        palette = [
+            None,
+            material_colors['surfaceContainerLowest'],
+            material_colors['surfaceContainerLow'],
+            material_colors['surfaceContainer'],
+            material_colors['surfaceContainerHigh'],
+            material_colors['surfaceContainerHighest'],
+            material_colors['outlineVariant'],
+            material_colors['onSurface'],
+            material_colors['surfaceBright'],
+            material_colors['outlineVariant'],
+            material_colors['outline'],
+            material_colors['onSurfaceVariant'],
+            material_colors['onSurfaceVariant'],
+            material_colors['onSurface'],
+            material_colors['inverseSurface'],
+            material_colors['onSurface'],
+        ]
+    else:
+        palette = [
+            None,
+            material_colors['surfaceContainerLowest'],
+            material_colors['surfaceContainerLow'],
+            material_colors['surfaceContainer'],
+            material_colors['surfaceContainerHigh'],
+            material_colors['surfaceContainerHighest'],
+            material_colors['outlineVariant'],
+            material_colors['onSurface'],
+            material_colors['surfaceDim'],
+            material_colors['outlineVariant'],
+            material_colors['outline'],
+            material_colors['onSurfaceVariant'],
+            material_colors['onSurfaceVariant'],
+            material_colors['onSurface'],
+            material_colors['inverseSurface'],
+            material_colors['onSurface'],
+        ]
+    return {f"term{i}": color for i, color in enumerate(palette) if color is not None}
+
 darkmode = (args.mode == 'dark')
 transparent = (args.transparency == 'transparent')
 
@@ -146,15 +187,16 @@ if args.termscheme is not None:
         json_termscheme = f.read()
     term_source_colors = json.loads(json_termscheme)['dark' if darkmode else 'light']
 
-    try: 
-        primary_color_argb = hex_to_argb(material_colors['primary_paletteKeyColor'])
-    except KeyError:
-        primary_color_argb = hex_to_argb("#ffffff")
-    
-for color, val in term_source_colors.items():
-        if(args.scheme == 'monochrome') :
-            term_colors[color] = val
-            continue
+    primary_palette_key = (
+        material_colors.get('primaryPaletteKeyColor')
+        or material_colors.get('primary_paletteKeyColor')
+        or material_colors.get('primary_palette_key_color')
+        or material_colors.get('primary')
+        or "#FFFFFF"
+    )
+    primary_color_argb = hex_to_argb(primary_palette_key)
+
+    for color, val in term_source_colors.items():
         if args.blend_bg_fg and color == "term0":
             harmonized = boost_chroma_tone(hex_to_argb(material_colors['surfaceContainerLow']), 1.2, 0.95)
         elif args.blend_bg_fg and color == "term15":
@@ -163,6 +205,8 @@ for color, val in term_source_colors.items():
             harmonized = harmonize(hex_to_argb(val), primary_color_argb, args.harmonize_threshold, args.harmony)
             harmonized = boost_chroma_tone(harmonized, 1, 1 + (args.term_fg_boost * (1 if darkmode else -1)))
         term_colors[color] = argb_to_hex(harmonized)
+    if args.scheme in ('monochrome', 'scheme-monochrome'):
+        term_colors.update(monochrome_term_colors(material_colors, darkmode))
 
 if args.debug == False:
     print(f"$darkmode: {darkmode};")
