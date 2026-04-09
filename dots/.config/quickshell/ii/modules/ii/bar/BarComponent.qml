@@ -47,32 +47,37 @@ Item {
     })
 
     property list<string> primaryBackgroundComps: ["timer", "record_indicator", "screen_share_indicator"] // components that are mostly indicators
+    readonly property real barGroupSize: vertical
+        ? Appearance.sizes.baseVerticalBarWidth - wrapper.backgroundInset * 2
+        : Appearance.sizes.baseBarHeight - wrapper.backgroundInset * 2
+    readonly property real outerRadius: Appearance.rounding.barControl(barGroupSize)
+    readonly property real innerRadius: Math.min(Appearance.rounding.unsharpenmore, outerRadius)
 
     property real startRadius: {
         if (barSection === 0) {
-            if (originalIndex == 0) return Appearance.rounding.full
-            return Appearance.rounding.verysmall
+            if (originalIndex == 0) return outerRadius
+            return innerRadius
         } else if (barSection === 2) {
             let hasVisibleLeft = list.slice(0, originalIndex).some(item => item.visible !== false)
-            return hasVisibleLeft ? Appearance.rounding.verysmall : Appearance.rounding.full
+            return hasVisibleLeft ? innerRadius : outerRadius
         } else { // barSection 1 
-            if (list.length === 1) return Appearance.rounding.full
+            if (list.length === 1) return outerRadius
             let hasVisibleLeft = list.slice(0, originalIndex).some(item => item.visible !== false)
-            return hasVisibleLeft ? Appearance.rounding.verysmall : Appearance.rounding.full
+            return hasVisibleLeft ? innerRadius : outerRadius
         }
     }
 
     property real endRadius: {
         if (barSection === 2) {
-            if (originalIndex == list.length - 1) return Appearance.rounding.full
-            return Appearance.rounding.verysmall
+            if (originalIndex == list.length - 1) return outerRadius
+            return innerRadius
         } else if (barSection === 0) {
             let hasVisibleRight = list.slice(originalIndex + 1).some(item => item.visible !== false)
-            return hasVisibleRight ? Appearance.rounding.verysmall : Appearance.rounding.full
+            return hasVisibleRight ? innerRadius : outerRadius
         } else { // barSection 1 
-            if (list.length === 1) return Appearance.rounding.full
+            if (list.length === 1) return outerRadius
             let hasVisibleRight = list.slice(originalIndex + 1).some(item => item.visible !== false)
-            return hasVisibleRight ? Appearance.rounding.verysmall : Appearance.rounding.full
+            return hasVisibleRight ? innerRadius : outerRadius
         }
     }
 

@@ -168,8 +168,8 @@ LazyLoader {
                 }
             }
 
-            border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.width: Appearance.borders.shellSurfaceWidth
+            border.color: Appearance.borders.shellSurfaceColor
         }
     }
 }

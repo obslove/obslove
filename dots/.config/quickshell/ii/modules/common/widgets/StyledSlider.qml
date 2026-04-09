@@ -40,12 +40,11 @@ Slider {
     property real unsharpenRadius: Appearance.rounding.unsharpen
     property real trackWidth: configuration
 
-    readonly property bool sharpMode: Config.options.appearance.sharpMode
-    property real trackRadius: sharpMode ? 0 : trackWidth >= StyledSlider.Configuration.XL ? 21
+    property real trackRadius: Appearance.rounding.token(trackWidth >= StyledSlider.Configuration.XL ? 21
         : trackWidth >= StyledSlider.Configuration.L ? 12
         : trackWidth >= StyledSlider.Configuration.M ? 9
         : trackWidth >= StyledSlider.Configuration.S ? 6
-        : height / 2
+        : height / 2)
         
     property real handleHeight: (configuration === StyledSlider.Configuration.Wavy) ? 24 : (configuration === StyledSlider.Configuration.X0) ? 14 : Math.max(33, trackWidth + 9)
     property real handleWidth: root.pressed ? handlePressedWidth : handleDefaultWidth
@@ -85,7 +84,7 @@ Slider {
         x: root.handleMargins + (normalizedValue * root.effectiveDraggingWidth) - (root.trackDotSize / 2)
         width: root.trackDotSize
         height: root.trackDotSize
-        radius: Appearance.rounding.full
+        radius: Appearance.rounding.capsuleFor(root.trackDotSize)
         color: normalizedValue > root.visualPosition ? root.dotColor : root.dotColorHighlighted
 
         Behavior on color {
@@ -208,7 +207,7 @@ Slider {
         implicitHeight: root.handleHeight
         x: root.leftPadding + (root.visualPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2)
         anchors.verticalCenter: parent.verticalCenter
-        radius: Appearance.rounding.full
+        radius: Appearance.rounding.compactControl(root.handleHeight)
         color: root.handleColor
 
         Behavior on implicitWidth {

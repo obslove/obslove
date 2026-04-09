@@ -153,8 +153,8 @@ Rectangle {
                     Rectangle {
                         anchors.fill: parent
                         color: "transparent"
-                        border.width: 1
-                        border.color: Appearance.colors.colOutlineVariant
+                        border.width: Appearance.borders.widgetOutlineWidth
+                        border.color: Appearance.borders.widgetOutlineColor
                         radius: Appearance.rounding.normal
                     }
                 }

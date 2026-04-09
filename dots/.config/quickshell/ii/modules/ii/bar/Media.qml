@@ -57,7 +57,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             color: Appearance.colors.colPrimaryContainer
-            radius: Appearance.rounding.full
+            radius: Appearance.rounding.barControl(height)
 
             Image {
                 anchors.fill: parent
@@ -75,7 +75,7 @@ Item {
                     maskSource: Rectangle {
                         width: artworkItem.width
                         height: artworkItem.height
-                        radius: Appearance.rounding.full
+                        radius: Appearance.rounding.barControl(artworkItem.height)
                     }
                 }
             }

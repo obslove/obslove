@@ -13,7 +13,7 @@ ContentPage {
     readonly property int index: 0
     property bool register: parent.register ?? false
     forceWidth: true
-    interactive: false
+    interactive: contentHeight > height
 
     property bool allowHeavyLoad: false
     Component.onCompleted: Qt.callLater(() => page.allowHeavyLoad = true)
@@ -362,21 +362,27 @@ ContentPage {
                 Layout.fillWidth: false
 
                 ConfigSelectionArray {
-                    currentValue: Config.options.appearance.sharpMode
+                    currentValue: Config.options.appearance.roundingStyle
                     onSelected: newValue => {
-                        Config.options.appearance.sharpMode = newValue;
-                        HyprlandSettings.setRounding(newValue ? 0 : Config.options.appearance.defaultBorderRadius);
+                        Config.options.appearance.roundingStyle = newValue;
+                        if (Config.options.appearance.toggleWindowRounding)
+                            HyprlandSettings.setRounding(Appearance.rounding.windowRoundingFor(newValue));
                     }
                     options: [ 
                         {
                             displayName: Translation.tr("Default"),
                             icon: "rounded_corner",
-                            value: false
+                            value: Appearance.rounding.styleDefault
+                        },
+                        {
+                            displayName: Translation.tr("Soft"),
+                            icon: "rounded_corner",
+                            value: Appearance.rounding.styleSoft
                         }, 
                         {
                             displayName: Translation.tr("Sharp"),
                             icon: "square",
-                            value: true
+                            value: Appearance.rounding.styleSharp
                         }
                     ]
                 }

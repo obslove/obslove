@@ -124,9 +124,9 @@ Singleton {
                 property bool extraBackgroundTint: true
                 property int fakeScreenRounding: 2 // 0: None | 1: Always | 2: When not fullscreen | 3: Wrapped
                 property int wrappedFrameThickness: 10
-                property bool sharpMode: false
+                property int roundingStyle: 0 // 0: Default | 1: Soft | 2: Sharp
                 property int defaultBorderRadius: 18
-                property bool toggleWindowRounding: true // Changes Hyprland window rounding to 0 if sharpMode is true
+                property bool toggleWindowRounding: true // Changes Hyprland window rounding to match roundingStyle
                 property JsonObject fonts: JsonObject {
                     property bool enableCustom: false
                     property string main: "Google Sans Flex"

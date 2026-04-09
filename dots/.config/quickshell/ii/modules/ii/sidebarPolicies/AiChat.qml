@@ -280,7 +280,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
     component StatusSeparator: Rectangle {
         implicitWidth: 4
         implicitHeight: 4
-        radius: implicitWidth / 2
+        radius: Appearance.rounding.capsuleFor(implicitWidth)
         color: Appearance.colors.colOutlineVariant
     }
 

@@ -148,7 +148,7 @@ Item {
         anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
         color: Appearance.colors.colPrimary
         opacity: Config.options.bar.workspaces.activeIndicatorOpacity / 100
-        radius: Appearance.rounding.full
+        radius: Appearance.rounding.barControl(root.vertical ? individualIconBoxHeight : individualIconBoxHeight)
         
         AnimatedTabIndexPair {
             id: idxPair
@@ -219,7 +219,7 @@ Item {
         anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
 
         color: "transparent"
-        radius: Appearance.rounding.full
+        radius: Appearance.rounding.barControl(root.vertical ? individualIconBoxHeight : individualIconBoxHeight)
         
         visible: interactionMouseArea.containsMouse
         opacity: visible ? 1 : 0
@@ -382,6 +382,7 @@ Item {
 
                 Pill {
                     property real stretchAmount: 12 // not using multiplier because it mulitplies multi-windowed workspaces A LOT
+                    radius: Appearance.rounding.barControl(Math.min(width, height))
                     
                     property real undirectionalWidth: root.iconBoxWrapperSize * wsBg.currentOccupied
                     
@@ -552,7 +553,7 @@ Item {
         property bool hover: false
         
         color: Appearance.colors.colPrimary
-        radius: Appearance.rounding.full
+        radius: Appearance.rounding.barControl(width)
         opacity: hover ? 0.1 : 0
         
         Behavior on opacity {
@@ -569,7 +570,7 @@ Item {
         anchors.centerIn: parent
         width: root.workspaceDotSize
         height: width
-        radius: width / 2
+        radius: Appearance.rounding.barControl(width)
         visible: layout.implicitHeight + 8 < root.iconBoxWrapperSize || root.showNumbersByMs
         color: !showNumbers ?  indColor : "transparent"
 

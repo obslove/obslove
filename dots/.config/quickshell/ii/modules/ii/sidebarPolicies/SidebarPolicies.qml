@@ -161,8 +161,8 @@ Scope { // Scope
             Rectangle {
                 id: sidebarLeftBackground
                 color: Appearance.colors.colLayer0
-                border.width: root.pin ? 0 : 1
-                border.color: root.pin ? "transparent" : Appearance.colors.colLayer0Border
+                border.width: root.pin ? 0 : Appearance.borders.shellSurfaceWidth
+                border.color: root.pin ? "transparent" : Appearance.borders.shellSurfaceColor
                 radius: root.pin ? 0 : Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
                 
                 height: root.pin ? parent.height : parent.height - (Appearance.sizes.hyprlandGapsOut * 2)

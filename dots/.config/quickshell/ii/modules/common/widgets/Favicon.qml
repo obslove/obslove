@@ -42,7 +42,7 @@ IconImage {
         maskSource: Rectangle {
             width: root.implicitSize
             height: root.implicitSize
-            radius: Appearance.rounding.full
+            radius: Appearance.rounding.compactControl(root.implicitSize)
         }
     }
 }

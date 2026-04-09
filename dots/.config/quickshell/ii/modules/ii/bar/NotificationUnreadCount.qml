@@ -19,7 +19,7 @@ MaterialSymbol {
             rightMargin: root.showUnreadCount ? 0 : 1
             topMargin: root.showUnreadCount ? 0 : 3
         }
-        radius: Appearance.rounding.full
+        radius: root.showUnreadCount ? Appearance.rounding.barControl(implicitHeight) : Appearance.rounding.statusDot
         color: Appearance.colors.colOnLayer0
         z: 1
 

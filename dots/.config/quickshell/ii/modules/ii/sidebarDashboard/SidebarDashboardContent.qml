@@ -55,8 +55,8 @@ Item {
         implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
         implicitWidth: sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
         color: Appearance.colors.colLayer0
-        border.width: 1
-        border.color: Appearance.colors.colLayer0Border
+        border.width: Appearance.borders.shellSurfaceWidth
+        border.color: Appearance.borders.shellSurfaceColor
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
 
         ColumnLayout {
@@ -219,7 +219,7 @@ Item {
                 left: parent.left
             }
             color: Appearance.colors.colLayer1
-            readonly property int fullRadius: Config.options.appearance.sharpMode ? Appearance.rounding.full : height / 2
+            readonly property int fullRadius: Appearance.rounding.capsuleFor(height)
             radius: fullRadius
             implicitWidth: uptimeRow.implicitWidth + 24
             implicitHeight: uptimeRow.implicitHeight + 8

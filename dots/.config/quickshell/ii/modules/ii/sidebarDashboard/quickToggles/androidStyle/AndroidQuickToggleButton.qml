@@ -63,7 +63,7 @@ GroupButton {
     colBackgroundToggled: (altAction && expandedSize) ? Appearance.colors.colLayer2 : Appearance.colors.colPrimary
     colBackgroundToggledHover: (altAction && expandedSize) ? Appearance.colors.colLayer2Hover : Appearance.colors.colPrimaryHover
     colBackgroundToggledActive: (altAction && expandedSize) ? Appearance.colors.colLayer2Active : Appearance.colors.colPrimaryActive
-    readonly property int fullRadius: Config.options.appearance.sharpMode ? Appearance.rounding.full : height / 2
+    readonly property int fullRadius: Appearance.rounding.capsuleFor(height)
     buttonRadius: toggled ? Appearance.rounding.large : fullRadius
     buttonRadiusPressed: Appearance.rounding.normal
     property color colText: (toggled && !(altAction && expandedSize) && enabled) ? Appearance.colors.colOnPrimary : ColorUtils.transparentize(Appearance.colors.colOnLayer2, enabled ? 0 : 0.7)

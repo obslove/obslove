@@ -106,7 +106,7 @@ ContentPage {
                 Config.options.appearance.toggleWindowRounding = checked;
             }
             StyledToolTip {
-                text: Translation.tr("Changes the window rounding to match the selected rounding style\nSo window rounding does not look cursed on 'no rounding' mode")
+                text: Translation.tr("Changes the window rounding to match the selected rounding style\nSo Hyprland windows stay aligned with Default, Soft, or Sharp")
             }
         }   
     }

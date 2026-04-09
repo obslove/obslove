@@ -42,8 +42,6 @@ RippleButton {
     property bool shouldLoad: false
 
     readonly property bool toggled: Config.options.appearance.palette.type === root.colorScheme
-    readonly property bool sharpMode: Config.options.appearance.sharpMode
-
     colBackground: toggled ? Appearance.colors.colPrimaryContainer : Appearance.colors.colLayer2
     colBackgroundHover: toggled ? Appearance.colors.colPrimaryContainerHover : Appearance.colors.colLayer2Hover
     colRipple: toggled ? Appearance.colors.colPrimaryContainerActive : Appearance.colors.colLayer2Active
@@ -134,15 +132,46 @@ RippleButton {
 
             antialiasing: true
 
+            Connections {
+                target: Appearance.rounding
+                function onModeChanged() {
+                    myCanvas.requestPaint();
+                }
+            }
+
             onPaint: {
                 var ctx = getContext("2d");
                 var centerX = width / 2;
                 var centerY = height / 2;
                 var radius = width / 2;
+                var cornerRadius = Appearance.rounding.capsuleFor(width);
+
+                function roundedRectPath(x, y, w, h, r) {
+                    const cappedR = Math.max(0, Math.min(r, Math.min(w, h) / 2));
+                    ctx.beginPath();
+                    if (cappedR === 0) {
+                        ctx.rect(x, y, w, h);
+                        return;
+                    }
+
+                    ctx.moveTo(x + cappedR, y);
+                    ctx.lineTo(x + w - cappedR, y);
+                    ctx.arcTo(x + w, y, x + w, y + cappedR, cappedR);
+                    ctx.lineTo(x + w, y + h - cappedR);
+                    ctx.arcTo(x + w, y + h, x + w - cappedR, y + h, cappedR);
+                    ctx.lineTo(x + cappedR, y + h);
+                    ctx.arcTo(x, y + h, x, y + h - cappedR, cappedR);
+                    ctx.lineTo(x, y + cappedR);
+                    ctx.arcTo(x, y, x + cappedR, y, cappedR);
+                    ctx.closePath();
+                }
 
                 ctx.reset();
 
-                if (root.sharpMode) {
+                if (!Appearance.rounding.isDefault) {
+                    roundedRectPath(0, 0, width, height, cornerRadius);
+                    ctx.clip();
+
                     ctx.fillStyle = root.primaryColor;
                     ctx.fillRect(0, 0, width, centerY);
 

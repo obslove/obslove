@@ -10,6 +10,7 @@ Singleton {
     property QtObject animation
     property QtObject animationCurves
     property QtObject colors
+    property QtObject borders
     property QtObject rounding
     property QtObject font
     property QtObject sizes
@@ -199,16 +200,65 @@ Singleton {
     }
 
     rounding: QtObject {
-        property int unsharpen: Config.options.appearance.sharpMode ? 0 : 2
-        property int unsharpenmore: Config.options.appearance.sharpMode ? 0 : 6
-        property int verysmall: Config.options.appearance.sharpMode ? 0 : 8
-        property int small: Config.options.appearance.sharpMode ? 0 : 12
-        property int normal: Config.options.appearance.sharpMode ? 0 : 17
-        property int large: Config.options.appearance.sharpMode ? 0 : 23
-        property int verylarge: Config.options.appearance.sharpMode ? 0 : 30
-        property int full: Config.options.appearance.sharpMode ? 0 : 9999
+        readonly property int mode: Config.options.appearance.roundingStyle
+        readonly property int styleDefault: 0
+        readonly property int styleSoft: 1
+        readonly property int styleSharp: 2
+        readonly property int softRadius: 6
+        readonly property bool isDefault: mode === styleDefault
+        readonly property bool isSharp: mode === styleSharp
+        readonly property bool isSoft: mode === styleSoft
+
+        function windowRoundingFor(mode) {
+            if (mode === styleSharp) return 0;
+            if (mode === styleSoft) return softRadius;
+            return Config.options.appearance.defaultBorderRadius;
+        }
+
+        function token(radius) {
+            if (isSharp) return 0;
+            if (isSoft) return radius > 0 ? softRadius : 0;
+            return radius;
+        }
+
+        function capsuleFor(size) {
+            if (isSharp) return 0;
+            if (isSoft) return Math.min(size / 2, softRadius);
+            return size / 2;
+        }
+
+        function compactControl(size) {
+            if (isSharp) return 0;
+            if (isSoft) return Math.min(size / 2, softRadius);
+            return size / 2;
+        }
+
+        function barControl(size) {
+            return compactControl(size);
+        }
+
+        property int unsharpen: token(2)
+        property int unsharpenmore: token(6)
+        property int verysmall: isSharp ? 0 : isSoft ? softRadius : 8
+        property int statusDot: isSharp ? 0 : isSoft ? softRadius : 9999
+        property int tooltip: isSharp ? 0 : isSoft ? softRadius : 8
+        property int small: isSharp ? 0 : isSoft ? softRadius : 12
+        property int normal: token(17)
+        property int large: token(23)
+        property int verylarge: token(30)
+        property int full: isSharp ? 0 : isSoft ? softRadius : 9999
         property int screenRounding: large
-        property int windowRounding: Config.options.appearance.sharpMode ? 0 : 18
+        property int windowRounding: windowRoundingFor(mode)
+    }
+
+    borders: QtObject {
+        // Keep decorative border widths so geometry stays aligned with main; hide them via color.
+        property int shellSurfaceWidth: 1
+        property color shellSurfaceColor: ColorUtils.transparentize(Appearance.colors.colLayer0Border, 1)
+        property int widgetOutlineWidth: 1
+        property color widgetOutlineColor: ColorUtils.transparentize(Appearance.colors.colOutlineVariant, 1)
+        property int emphasisOutlineWidth: 2
+        property color emphasisOutlineColor: ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
     }
 
     font: QtObject {
@@ -404,6 +454,8 @@ Singleton {
 
     sizes: QtObject {
         property real baseBarHeight: Config.options.bar.sizes.height
+        // Keeps shell chrome stable across rounding styles instead of shrinking with soft mode.
+        property real panelScreenInset: 23
         property real barHeight: Config.options.bar.cornerStyle === 1 ? 
             (baseBarHeight + root.sizes.hyprlandGapsOut * 2) : baseBarHeight
         property real barCenterSideModuleWidth: Config.options?.bar.verbose ? 360 : 140
@@ -415,6 +467,8 @@ Singleton {
         property real fabShadowRadius: 5
         property real fabHoveredShadowRadius: 7
         property real hyprlandGapsOut: 5
+        // Keep dialog content geometry stable across rounding styles.
+        property real dialogContentInset: 23
         property real mediaControlsWidth: 440
         property real mediaControlsHeight: 160
         property real notificationPopupWidth: 410

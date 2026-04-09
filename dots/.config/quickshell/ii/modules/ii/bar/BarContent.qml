@@ -77,8 +77,8 @@ Item { // Bar content region
         }
         color: root.showBarBackground ? Appearance.colors.colLayer0 : "transparent"
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
-        border.width: Config.options.bar.cornerStyle === 1 ? 1 : 0
-        border.color: root.showBarBackground ? Appearance.colors.colLayer0Border : "transparent"
+        border.width: Config.options.bar.cornerStyle === 1 ? Appearance.borders.shellSurfaceWidth : 0
+        border.color: root.showBarBackground ? Appearance.borders.shellSurfaceColor : "transparent"
 
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -121,7 +121,7 @@ Item { // Bar content region
             top: parent.top
             bottom: parent.bottom
             left: parent.left
-            leftMargin: Math.ceil(Appearance.rounding.screenRounding / 2)
+            leftMargin: Math.ceil(Appearance.sizes.panelScreenInset / 2)
         }
         width: 1
     }
@@ -214,7 +214,7 @@ Item { // Bar content region
             top: parent.top
             bottom: parent.bottom
             right: rightStopper.left
-            rightMargin: Math.ceil(Appearance.rounding.screenRounding / 2)
+            rightMargin: Math.ceil(Appearance.sizes.panelScreenInset / 2)
         }
         spacing: 4
 

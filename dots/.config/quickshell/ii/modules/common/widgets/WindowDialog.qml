@@ -13,6 +13,7 @@ Rectangle {
     property real backgroundHeight: dialogBackground.implicitHeight
     property real backgroundWidth: 350
     property real backgroundAnimationMovementDistance: 60
+    property real contentInset: Appearance.sizes.dialogContentInset
     
     signal dismiss()
     Keys.onPressed: (event) => {
@@ -51,7 +52,7 @@ Rectangle {
         property real targetY: root.height / 2 - root.backgroundHeight / 2
         y: root.show ? targetY : (targetY - root.backgroundAnimationMovementDistance)
         implicitWidth: root.backgroundWidth
-        implicitHeight: contentColumn.implicitHeight + dialogBackground.radius * 2
+        implicitHeight: contentColumn.implicitHeight + root.contentInset * 2
         Behavior on implicitHeight {
             NumberAnimation {
                 id: dialogBackgroundHeightAnimation
@@ -78,7 +79,7 @@ Rectangle {
             id: contentColumn
             anchors {
                 fill: parent
-                margins: dialogBackground.radius
+                margins: root.contentInset
             }
             spacing: 16
             opacity: root.show ? 1 : 0

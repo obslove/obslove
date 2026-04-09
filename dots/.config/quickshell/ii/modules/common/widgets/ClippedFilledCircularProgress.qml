@@ -68,12 +68,13 @@ Item {
     property bool passedTopRight:    animatedValue > 0.25
     property bool passedBottomRight: animatedValue > 0.5
     property bool passedBottomLeft:  animatedValue > 0.75
+    readonly property bool usePolygonSource: !Appearance.rounding.isDefault
 
     // Circular source
     Rectangle {
         id: circularContent
         anchors.fill: parent
-        radius: implicitSize / 2
+        radius: Appearance.rounding.capsuleFor(implicitSize)
         color: root.colSecondary
         visible: false
         layer.enabled: true
@@ -111,15 +112,16 @@ Item {
         }
     }
 
-    // Square source
-    Rectangle {
-        id: squareContent
+    // Polygon source used by the non-default rounding styles.
+    Item {
+        id: polygonContent
         anchors.fill: parent
-        radius: 0
-        color: root.colSecondary
         visible: false
-        layer.enabled: true
-        layer.smooth: true
+
+        Rectangle {
+            anchors.fill: parent
+            color: root.colSecondary
+        }
 
         Shape {
             anchors.fill: parent
@@ -156,17 +158,20 @@ Item {
     }
 
     OpacityMask {
+        id: roundedPolygonContent
         anchors.fill: parent
-        visible: !Config.options.appearance.sharpMode
-        source: circularContent
-        invert: true
-        maskSource: root.textMask
+        visible: false
+        source: polygonContent
+        maskSource: Rectangle {
+            width: root.sz
+            height: root.sz
+            radius: Appearance.rounding.compactControl(root.sz)
+        }
     }
 
     OpacityMask {
         anchors.fill: parent
-        visible: Config.options.appearance.sharpMode
-        source: squareContent
+        source: root.usePolygonSource ? roundedPolygonContent : circularContent
         invert: true
         maskSource: root.textMask
     }

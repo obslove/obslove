@@ -19,7 +19,7 @@ Switch {
     background: Rectangle {
         width: parent.width
         height: parent.height
-        radius: Appearance?.rounding.full ?? 9999
+        radius: Appearance.rounding.compactControl(height)
         color: root.checked ? root.activeColor : root.inactiveColor
         border.width: 2 * root.scale
         border.color: root.checked ? root.activeColor : Appearance.m3colors.m3outline
@@ -36,7 +36,7 @@ Switch {
     indicator: Rectangle {
         width: (root.pressed || root.down) ? (28 * root.scale) : root.checked ? (24 * root.scale) : (16 * root.scale)
         height: (root.pressed || root.down) ? (28 * root.scale) : root.checked ? (24 * root.scale) : (16 * root.scale)
-        radius: Appearance.rounding.full
+        radius: Appearance.rounding.compactControl(height)
         color: root.checked ? Appearance.m3colors.m3onPrimary : Appearance.m3colors.m3outline
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left

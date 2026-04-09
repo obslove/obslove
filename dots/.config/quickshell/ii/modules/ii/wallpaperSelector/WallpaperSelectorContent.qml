@@ -302,8 +302,8 @@ MouseArea {
             margins: Appearance.sizes.elevationMargin
         }
         focus: true
-        border.width: 1
-        border.color: Appearance.colors.colLayer0Border
+        border.width: Appearance.borders.shellSurfaceWidth
+        border.color: Appearance.borders.shellSurfaceColor
         color: Appearance.colors.colLayer0
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
 

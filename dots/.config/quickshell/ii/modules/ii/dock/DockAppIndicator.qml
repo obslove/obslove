@@ -55,7 +55,7 @@ Item {
             width: indicatorContainer.baseDotW * shrinkFactor
             height: indicatorContainer.baseDotH * shrinkFactor
 
-            radius: Appearance.rounding.full
+            radius: Appearance.rounding.compactControl(Math.min(width, height))
 
             x: root.isVertical ? (indicatorContainer.baseDotW - width) / 2 : (index * indicatorContainer.pitchX + (indicatorContainer.baseDotW - width) / 2)
             y: root.isVertical ? (index * indicatorContainer.pitchY + (indicatorContainer.baseDotH - height) / 2) : (indicatorContainer.baseDotH - height) / 2

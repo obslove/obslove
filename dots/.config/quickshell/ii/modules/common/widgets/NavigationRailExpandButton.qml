@@ -12,7 +12,7 @@ RippleButton {
     downAction: () => {
         parent.expanded = !parent.expanded;
     }
-    buttonRadius: Appearance.rounding.full
+    buttonRadius: Appearance.rounding.compactControl(implicitHeight)
     property bool _isInitialized: false
     Component.onCompleted: _isInitialized = true
 

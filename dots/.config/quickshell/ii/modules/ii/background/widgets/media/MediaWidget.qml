@@ -281,7 +281,7 @@ AbstractBackgroundWidget {
                     left: parent.left
                     bottom: parent.bottom
                 }
-                buttonRadius: root.currentPlayer?.isPlaying ? Appearance.rounding.normal : controlsSize / 2
+                buttonRadius: root.currentPlayer?.isPlaying ? Appearance.rounding.normal : Appearance.rounding.capsuleFor(controlsSize)
                 colBackground: root.dynamicColors.colSecondaryBackground
                 colBackgroundHover: root.dynamicColors.colSecondaryBackgroundHover
                 colRipple: root.dynamicColors.colSecondaryRipple

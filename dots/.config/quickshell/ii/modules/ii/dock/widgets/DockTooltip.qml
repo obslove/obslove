@@ -76,9 +76,9 @@ PopupWindow {
         }
 
         color: Appearance.m3colors.m3surfaceContainer
-        radius: Appearance.rounding.small
-        border.width: 1
-        border.color: Appearance.colors.colLayer0Border
+        radius: Appearance.rounding.tooltip
+        border.width: Appearance.borders.shellSurfaceWidth
+        border.color: Appearance.borders.shellSurfaceColor
 
         StyledText {
             id: tooltipText

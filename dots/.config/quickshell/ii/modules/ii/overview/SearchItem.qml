@@ -199,7 +199,7 @@ RippleButton {
                     sourceComponent: Rectangle {
                         implicitWidth: activeText.implicitHeight
                         implicitHeight: activeText.implicitHeight
-                        radius: Appearance.rounding.full
+                        radius: Appearance.rounding.compactControl(implicitHeight)
                         color: Appearance.colors.colPrimary
                         MaterialSymbol {
                             id: activeText

@@ -21,13 +21,12 @@ RippleButton { // Right sidebar button
     }
 
     Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
-    Layout.bottomMargin: Appearance.rounding.screenRounding
     Layout.fillHeight: false
 
     implicitHeight: (useFixedIcon ? fixedIcon.implicitHeight : indicatorsColumnLayout.implicitHeight) + 4 * 2
     implicitWidth: (useFixedIcon ? fixedIcon.implicitWidth : indicatorsColumnLayout.implicitWidth) + 6 * 2
 
-    buttonRadius: Appearance.rounding.full
+    buttonRadius: Appearance.rounding.barControl(implicitWidth)
     colBackgroundHover: Appearance.colors.colLayer1Hover
     colRipple: Appearance.colors.colLayer1Active
     colBackgroundToggled: Appearance.colors.colSecondaryContainer

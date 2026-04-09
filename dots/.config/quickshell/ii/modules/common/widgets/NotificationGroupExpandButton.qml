@@ -15,7 +15,7 @@ RippleButton { // Expand button
     Layout.alignment: Qt.AlignVCenter
     Layout.fillHeight: false
 
-    buttonRadius: Appearance.rounding.full
+    buttonRadius: Appearance.rounding.compactControl(implicitHeight)
     colBackground: ColorUtils.mix(Appearance?.colors.colLayer2, Appearance?.colors.colLayer2Hover, 0.5)
     colBackgroundHover: Appearance?.colors.colLayer2Hover ?? "#E5DFED"
     colRipple: Appearance?.colors.colLayer2Active ?? "#D6CEE2"

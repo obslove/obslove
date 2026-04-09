@@ -25,7 +25,7 @@ RippleButton {
     Rectangle {
         width: 8
         height: 8
-        radius: Appearance.rounding.full
+        radius: Appearance.rounding.compactControl(height)
         color: (taskList.length > 0 && isToday !== -1 && !bold) ? 
                toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colPrimary : "transparent"
         anchors {

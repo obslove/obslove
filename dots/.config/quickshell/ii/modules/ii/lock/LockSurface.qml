@@ -165,7 +165,7 @@ MouseArea {
                 maskSource: Rectangle {
                     width: passwordBox.width - 8
                     height: passwordBox.height
-                    radius: height / 2
+                    radius: Appearance.rounding.capsuleFor(height)
                 }
             }
 

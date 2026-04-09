@@ -7,7 +7,7 @@ RippleButton {
     id: root
     property bool active: false
 
-    horizontalPadding: Appearance.rounding.large
+    horizontalPadding: Appearance.sizes.dialogContentInset
     verticalPadding: 12
 
     clip: true

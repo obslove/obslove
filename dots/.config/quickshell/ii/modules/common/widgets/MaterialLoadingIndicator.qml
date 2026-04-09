@@ -14,7 +14,7 @@ Rectangle {
     property double implicitSize: 48
     implicitWidth: implicitSize
     implicitHeight: implicitSize
-    radius: Math.min(width, height) / 2
+    radius: Appearance.rounding.capsuleFor(Math.min(width, height))
     color: Appearance.colors.colPrimaryContainer
     property double baseShapeSize: root.implicitSize * 0.7
     property double leapZoomSize: root.baseShapeSize * 1.2
