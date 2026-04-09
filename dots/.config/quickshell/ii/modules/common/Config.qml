@@ -432,6 +432,7 @@ Singleton {
                     property bool compactPopups: false
                     property bool openSidebarsOutsideButtons: false
                 }
+                property bool sideScrollAdjustments: false
                 property JsonObject sizes: JsonObject {
                     property int height: 40 // horizontal mode
                     property int width: 46 // vertical mode

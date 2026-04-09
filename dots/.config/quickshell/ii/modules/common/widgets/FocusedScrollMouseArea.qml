@@ -8,6 +8,7 @@ MouseArea { // Right side | scroll to change volume
     signal movedAway()
 
     property bool hovered: false
+    property bool scrollEnabled: true
     property real lastScrollX: 0
     property real lastScrollY: 0
     property bool trackingScroll: false
@@ -26,6 +27,10 @@ MouseArea { // Right side | scroll to change volume
     }
 
     onWheel: event => {
+        if (!root.scrollEnabled) {
+            event.accepted = false;
+            return;
+        }
         if (event.angleDelta.y < 0)
             root.scrollDown(event.angleDelta.y);
         else if (event.angleDelta.y > 0)

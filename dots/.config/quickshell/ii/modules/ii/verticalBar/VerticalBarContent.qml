@@ -77,6 +77,7 @@ Item { // Bar content region
 
     FocusedScrollMouseArea { // Top section | scroll to change brightness
         id: barTopSectionMouseArea
+        scrollEnabled: Config.options.bar.sideScrollAdjustments
         anchors.top: parent.top
         
 
@@ -224,6 +225,7 @@ Item { // Bar content region
 
     FocusedScrollMouseArea { // Bottom section | scroll to change volume
         id: barBottomSectionMouseArea
+        scrollEnabled: Config.options.bar.sideScrollAdjustments
 
         z: -1
         anchors {

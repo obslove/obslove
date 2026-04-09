@@ -1226,5 +1226,16 @@ ContentPage {
                 Config.options.bar.tooltips.openSidebarsOutsideButtons = checked;
             }
         }
+        ConfigSwitch {
+            buttonIcon: "swap_vert"
+            text: Translation.tr("Side scroll adjustments")
+            checked: Config.options.bar.sideScrollAdjustments
+            onCheckedChanged: {
+                Config.options.bar.sideScrollAdjustments = checked;
+            }
+            StyledToolTip {
+                text: Translation.tr("Lets the bar edges change brightness and volume with the mouse wheel")
+            }
+        }
     }
 }
