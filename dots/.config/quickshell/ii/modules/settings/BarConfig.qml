@@ -1,5 +1,8 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
+import Qt.labs.folderlistmodel
+import Quickshell
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -11,8 +14,27 @@ ContentPage {
     forceWidth: true
     readonly property int index: 2 
     property bool register: parent.register ?? false
+    property string policiesPanelButtonIconSearch: ""
+    property bool policiesPanelButtonIconSelectorOpen: false
+    property string dashboardPanelButtonIconSearch: ""
+    property bool dashboardPanelButtonIconSelectorOpen: false
+    property var allBarButtonIconOptions: []
+    function filterBarButtonIconOptions(query) {
+        const normalizedQuery = query.trim().toLowerCase();
+        if (normalizedQuery.length === 0)
+            return allBarButtonIconOptions;
+        return allBarButtonIconOptions.filter(option => option.searchText.includes(normalizedQuery));
+    }
+    readonly property var filteredPoliciesPanelButtonIconOptions: {
+        return page.filterBarButtonIconOptions(policiesPanelButtonIconSearch);
+    }
+    readonly property var filteredDashboardPanelButtonIconOptions: {
+        return page.filterBarButtonIconOptions(dashboardPanelButtonIconSearch);
+    }
 
     property var componentMap: ({
+        "policies_panel_button": policiesPanelButtonSettings,
+        "dashboard_panel_button": dashboardPanelButtonSettings,
         "active_window": activeWindow,
         "clock": clockSettings,
         "date": dateSettings,
@@ -27,6 +49,90 @@ ContentPage {
     function scrollTo(stringId) {
         const item = componentMap[stringId]
         page.contentY = item.y
+    }
+
+    function prettifyBarButtonIconName(iconValue) {
+        if (iconValue === "distro")
+            return Translation.tr("Distro");
+
+        let name = iconValue ?? "";
+        if (name.endsWith(".svg"))
+            name = name.slice(0, -4);
+        const slashIndex = name.lastIndexOf("/");
+        if (slashIndex !== -1)
+            name = name.slice(slashIndex + 1);
+        name = name.replace(/-symbolic$/, "");
+        return name.replace(/[-_]+/g, " ").trim();
+    }
+
+    function resolveBarButtonIconSource(iconValue) {
+        if (iconValue === "distro")
+            return SystemInfo.distroIcon;
+        if (!iconValue || iconValue.length === 0)
+            return "spark-symbolic";
+        if (iconValue.includes("/") || iconValue.endsWith(".svg") || iconValue.endsWith("-symbolic"))
+            return iconValue;
+        return `${iconValue}-symbolic`;
+    }
+
+    function rebuildBarButtonIconOptions() {
+        const options = [{
+            displayName: Translation.tr("Distro"),
+            searchText: "distro system linux",
+            symbol: SystemInfo.distroIcon,
+            value: "distro"
+        }];
+
+        for (let i = 0; i < rootIconFolder.count; i++) {
+            const fileName = rootIconFolder.get(i, "fileName");
+            if (!fileName)
+                continue;
+            options.push({
+                displayName: page.prettifyBarButtonIconName(fileName),
+                searchText: `root ${fileName.toLowerCase()} ${page.prettifyBarButtonIconName(fileName).toLowerCase()}`,
+                symbol: fileName,
+                value: fileName
+            });
+        }
+
+        for (let i = 0; i < fluentIconFolder.count; i++) {
+            const fileName = fluentIconFolder.get(i, "fileName");
+            if (!fileName)
+                continue;
+            const relativePath = `fluent/${fileName}`;
+            options.push({
+                displayName: page.prettifyBarButtonIconName(relativePath),
+                searchText: `fluent ${fileName.toLowerCase()} ${page.prettifyBarButtonIconName(relativePath).toLowerCase()}`,
+                symbol: relativePath,
+                value: relativePath
+            });
+        }
+
+        page.allBarButtonIconOptions = options;
+    }
+
+    FolderListModel {
+        id: rootIconFolder
+        folder: Qt.resolvedUrl(Quickshell.shellPath("assets/icons"))
+        nameFilters: ["*.svg"]
+        showDirs: false
+        showDotAndDotDot: false
+        sortField: FolderListModel.Name
+        onCountChanged: page.rebuildBarButtonIconOptions()
+    }
+
+    FolderListModel {
+        id: fluentIconFolder
+        folder: Qt.resolvedUrl(Quickshell.shellPath("assets/icons/fluent"))
+        nameFilters: ["*.svg"]
+        showDirs: false
+        showDotAndDotDot: false
+        sortField: FolderListModel.Name
+        onCountChanged: page.rebuildBarButtonIconOptions()
+    }
+
+    Component.onCompleted: {
+        page.rebuildBarButtonIconOptions();
     }
 
 
@@ -63,6 +169,165 @@ ContentPage {
                 listModel: Config.options.bar.layouts.right
                 onUpdated: (newList) => {
                     Config.options.bar.layouts.right = newList
+                }
+            }
+        }
+    }
+
+    ContentSection {
+        id: policiesPanelButtonSettings
+        icon: "star"
+        title: Translation.tr("Policies panel button")
+
+        ContentSubsection {
+            title: Translation.tr("Icon")
+            tooltip: Translation.tr("Click the current icon card to choose a different icon")
+
+            RippleButton {
+                Layout.fillWidth: true
+                implicitHeight: previewRow.implicitHeight + 24
+                horizontalPadding: 0
+                buttonRadius: Appearance.rounding.large
+                colBackground: Appearance.colors.colLayer2
+                colBackgroundHover: Appearance.colors.colLayer2Hover
+                colRipple: Appearance.colors.colLayer2Active
+
+                onClicked: {
+                    page.policiesPanelButtonIconSelectorOpen = !page.policiesPanelButtonIconSelectorOpen;
+                    if (!page.policiesPanelButtonIconSelectorOpen)
+                        page.policiesPanelButtonIconSearch = "";
+                }
+
+                contentItem: RowLayout {
+                    id: previewRow
+                    anchors.fill: parent
+                    anchors.margins: 12
+                    spacing: 12
+
+                    Rectangle {
+                        implicitWidth: 42
+                        implicitHeight: 42
+                        radius: Appearance.rounding.full
+                        color: Appearance.colors.colLayer1
+
+                        CustomIcon {
+                            anchors.centerIn: parent
+                            width: 22
+                            height: 22
+                            source: page.resolveBarButtonIconSource(Config.options.bar.topLeftIcon)
+                            colorize: true
+                            color: Appearance.colors.colOnLayer0
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        StyledText {
+                            text: Translation.tr("Current icon")
+                            color: Appearance.colors.colSubtext
+                            font.pixelSize: Appearance.font.pixelSize.small
+                        }
+
+                        StyledText {
+                            Layout.fillWidth: true
+                            text: page.prettifyBarButtonIconName(Config.options.bar.topLeftIcon)
+                            color: Appearance.colors.colOnLayer0
+                            font.family: Appearance.font.family.title
+                            font.pixelSize: Appearance.font.pixelSize.large
+                        }
+                    }
+
+                    MaterialSymbol {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: page.policiesPanelButtonIconSelectorOpen ? "expand_less" : "edit"
+                        iconSize: Appearance.font.pixelSize.large
+                        color: Appearance.colors.colSubtext
+                    }
+                }
+            }
+
+            Loader {
+                active: page.policiesPanelButtonIconSelectorOpen
+                visible: active
+                Layout.fillWidth: true
+
+                sourceComponent: ColumnLayout {
+                    spacing: 8
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        MaterialSymbol {
+                            text: "search"
+                            iconSize: Appearance.font.pixelSize.huge
+                            color: Appearance.colors.colSubtext
+                        }
+
+                        ToolbarTextField {
+                            Layout.fillWidth: true
+                            placeholderText: Translation.tr("Search icons")
+                            text: page.policiesPanelButtonIconSearch
+                            onTextChanged: page.policiesPanelButtonIconSearch = text
+                        }
+
+                        StyledText {
+                            text: `${page.filteredPoliciesPanelButtonIconOptions.length}`
+                            color: Appearance.colors.colSubtext
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: 280
+                        radius: Appearance.rounding.large
+                        color: Appearance.colors.colLayer1
+                        clip: true
+
+                        GridView {
+                            id: iconGrid
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            cellWidth: 52
+                            cellHeight: 52
+                            boundsBehavior: Flickable.DragOverBounds
+                            model: page.filteredPoliciesPanelButtonIconOptions
+                            ScrollBar.vertical: StyledScrollBar {}
+
+                            delegate: Item {
+                                required property var modelData
+                                width: iconGrid.cellWidth
+                                height: iconGrid.cellHeight
+
+                                SelectionGroupButton {
+                                    anchors.centerIn: parent
+                                    width: 44
+                                    height: 44
+                                    leftmost: true
+                                    rightmost: true
+                                    buttonSymbol: modelData.symbol
+                                    toggled: Config.options.bar.topLeftIcon === modelData.value
+
+                                    onClicked: {
+                                        Config.options.bar.topLeftIcon = modelData.value;
+                                    }
+
+                                    StyledToolTip {
+                                        text: modelData.displayName
+                                    }
+                                }
+                            }
+                        }
+
+                        StyledText {
+                            anchors.centerIn: parent
+                            visible: page.filteredPoliciesPanelButtonIconOptions.length === 0
+                            text: Translation.tr("No icons found")
+                            color: Appearance.colors.colSubtext
+                        }
+                    }
                 }
             }
         }
@@ -336,6 +601,203 @@ ContentPage {
     }
     
     ContentSection {
+        id: dashboardPanelButtonSettings
+        icon: "notifications"
+        title: Translation.tr("Dashboard panel button")
+
+        ContentSubsection {
+            title: Translation.tr("Icon mode")
+            tooltip: Translation.tr("Dynamic keeps the original live indicators. Fixed removes the notification indicators and shows only one fixed icon.")
+
+            ConfigSelectionArray {
+                currentValue: Config.options.bar.dashboardPanelButton.iconMode
+                onSelected: newValue => {
+                    Config.options.bar.dashboardPanelButton.iconMode = newValue;
+                }
+                options: [
+                    {
+                        displayName: Translation.tr("Dynamic"),
+                        icon: "auto_awesome_motion",
+                        value: "dynamic"
+                    },
+                    {
+                        displayName: Translation.tr("Fixed"),
+                        icon: "keep",
+                        value: "fixed"
+                    }
+                ]
+            }
+        }
+
+        ContentSubsection {
+            title: Translation.tr("Icon")
+            tooltip: Translation.tr("Click the current icon card to choose a different icon")
+            visible: Config.options.bar.dashboardPanelButton.iconMode === "fixed"
+
+            RippleButton {
+                Layout.fillWidth: true
+                implicitHeight: dashboardPreviewRow.implicitHeight + 24
+                horizontalPadding: 0
+                buttonRadius: Appearance.rounding.large
+                colBackground: Appearance.colors.colLayer2
+                colBackgroundHover: Appearance.colors.colLayer2Hover
+                colRipple: Appearance.colors.colLayer2Active
+
+                onClicked: {
+                    page.dashboardPanelButtonIconSelectorOpen = !page.dashboardPanelButtonIconSelectorOpen;
+                    if (!page.dashboardPanelButtonIconSelectorOpen)
+                        page.dashboardPanelButtonIconSearch = "";
+                }
+
+                contentItem: RowLayout {
+                    id: dashboardPreviewRow
+                    anchors.fill: parent
+                    anchors.margins: 12
+                    spacing: 12
+
+                    Rectangle {
+                        implicitWidth: 42
+                        implicitHeight: 42
+                        radius: Appearance.rounding.full
+                        color: Appearance.colors.colLayer1
+
+                        CustomIcon {
+                            anchors.centerIn: parent
+                            width: 22
+                            height: 22
+                            source: page.resolveBarButtonIconSource(Config.options.bar.dashboardPanelButton.icon)
+                            colorize: true
+                            color: Appearance.colors.colOnLayer0
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        StyledText {
+                            text: Translation.tr("Current icon")
+                            color: Appearance.colors.colSubtext
+                            font.pixelSize: Appearance.font.pixelSize.small
+                        }
+
+                        StyledText {
+                            Layout.fillWidth: true
+                            text: page.prettifyBarButtonIconName(Config.options.bar.dashboardPanelButton.icon)
+                            color: Appearance.colors.colOnLayer0
+                            font.family: Appearance.font.family.title
+                            font.pixelSize: Appearance.font.pixelSize.large
+                        }
+                    }
+
+                    MaterialSymbol {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: page.dashboardPanelButtonIconSelectorOpen ? "expand_less" : "edit"
+                        iconSize: Appearance.font.pixelSize.large
+                        color: Appearance.colors.colSubtext
+                    }
+                }
+            }
+
+            Loader {
+                active: page.dashboardPanelButtonIconSelectorOpen
+                visible: active
+                Layout.fillWidth: true
+
+                sourceComponent: ColumnLayout {
+                    spacing: 8
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        MaterialSymbol {
+                            text: "search"
+                            iconSize: Appearance.font.pixelSize.huge
+                            color: Appearance.colors.colSubtext
+                        }
+
+                        ToolbarTextField {
+                            Layout.fillWidth: true
+                            placeholderText: Translation.tr("Search icons")
+                            text: page.dashboardPanelButtonIconSearch
+                            onTextChanged: page.dashboardPanelButtonIconSearch = text
+                        }
+
+                        StyledText {
+                            text: `${page.filteredDashboardPanelButtonIconOptions.length}`
+                            color: Appearance.colors.colSubtext
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: 280
+                        radius: Appearance.rounding.large
+                        color: Appearance.colors.colLayer1
+                        clip: true
+
+                        GridView {
+                            id: dashboardIconGrid
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            cellWidth: 52
+                            cellHeight: 52
+                            boundsBehavior: Flickable.DragOverBounds
+                            model: page.filteredDashboardPanelButtonIconOptions
+                            ScrollBar.vertical: StyledScrollBar {}
+
+                            delegate: Item {
+                                required property var modelData
+                                width: dashboardIconGrid.cellWidth
+                                height: dashboardIconGrid.cellHeight
+
+                                SelectionGroupButton {
+                                    anchors.centerIn: parent
+                                    width: 44
+                                    height: 44
+                                    leftmost: true
+                                    rightmost: true
+                                    buttonSymbol: modelData.symbol
+                                    toggled: Config.options.bar.dashboardPanelButton.icon === modelData.value
+
+                                    onClicked: {
+                                        Config.options.bar.dashboardPanelButton.icon = modelData.value;
+                                    }
+
+                                    StyledToolTip {
+                                        text: modelData.displayName
+                                    }
+                                }
+                            }
+                        }
+
+                        StyledText {
+                            anchors.centerIn: parent
+                            visible: page.filteredDashboardPanelButtonIconOptions.length === 0
+                            text: Translation.tr("No icons found")
+                            color: Appearance.colors.colSubtext
+                        }
+                    }
+                }
+            }
+        }
+
+        ContentSubsection {
+            title: Translation.tr("Notifications")
+
+            ConfigSwitch {
+                buttonIcon: "counter_2"
+                text: Translation.tr("Unread indicator: show count")
+                checked: Config.options.bar.indicators.notifications.showUnreadCount
+                onCheckedChanged: {
+                    Config.options.bar.indicators.notifications.showUnreadCount = checked;
+                }
+            }
+        }
+    }
+
+    ContentSection {
         id: activeWindow
         icon: "ad"
         title: Translation.tr("Active window")
@@ -463,19 +925,6 @@ ContentPage {
 
     }
     
-
-    ContentSection {
-        icon: "notifications"
-        title: Translation.tr("Notifications")
-        ConfigSwitch {
-            buttonIcon: "counter_2"
-            text: Translation.tr("Unread indicator: show count")
-            checked: Config.options.bar.indicators.notifications.showUnreadCount
-            onCheckedChanged: {
-                Config.options.bar.indicators.notifications.showUnreadCount = checked;
-            }
-        }
-    }
 
     ContentSection {
         id: systemTray

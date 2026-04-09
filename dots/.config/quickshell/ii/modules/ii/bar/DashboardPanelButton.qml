@@ -7,13 +7,25 @@ import qs.modules.common.widgets
 
 RippleButton { // Right sidebar button
     id: rightSidebarButton
+    readonly property real sideButtonIconSize: 20
+    readonly property bool useFixedIcon: Config.options.bar.dashboardPanelButton.iconMode === "fixed"
+    readonly property string resolvedIconSource: {
+        const icon = Config.options.bar.dashboardPanelButton.icon;
+        if (icon === "distro")
+            return SystemInfo.distroIcon;
+        if (!icon || icon.length === 0)
+            return "fluent/alert.svg";
+        if (icon.includes("/") || icon.endsWith(".svg") || icon.endsWith("-symbolic"))
+            return icon;
+        return `${icon}-symbolic`;
+    }
 
     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
     Layout.rightMargin: Appearance.rounding.screenRounding
     Layout.fillWidth: false
 
-    implicitWidth: indicatorsRowLayout.implicitWidth + 10 * 2
-    implicitHeight: indicatorsRowLayout.implicitHeight + 5 * 2
+    implicitWidth: (useFixedIcon ? fixedIcon.implicitWidth : indicatorsRowLayout.implicitWidth) + 10 * 2
+    implicitHeight: (useFixedIcon ? fixedIcon.implicitHeight : indicatorsRowLayout.implicitHeight) + 5 * 2
 
     buttonRadius: Appearance.rounding.full
     colBackgroundHover: Appearance.colors.colLayer1Hover
@@ -32,9 +44,23 @@ RippleButton { // Right sidebar button
         GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
     }
 
+    CustomIcon {
+        id: fixedIcon
+        anchors.centerIn: parent
+        visible: rightSidebarButton.useFixedIcon
+        implicitWidth: rightSidebarButton.sideButtonIconSize
+        implicitHeight: rightSidebarButton.sideButtonIconSize
+        width: implicitWidth
+        height: implicitHeight
+        source: rightSidebarButton.resolvedIconSource
+        colorize: true
+        color: rightSidebarButton.colText
+    }
+
     RowLayout {
         id: indicatorsRowLayout
         anchors.centerIn: parent
+        visible: !rightSidebarButton.useFixedIcon
         property real realSpacing: 15
         spacing: 0
 

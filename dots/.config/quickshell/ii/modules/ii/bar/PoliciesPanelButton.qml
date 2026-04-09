@@ -8,6 +8,17 @@ RippleButton {
     id: leftSidebarButton
 
     property bool showPing: false
+    readonly property real sideButtonIconSize: 20
+    readonly property string resolvedIconSource: {
+        const icon = Config.options.bar.topLeftIcon;
+        if (icon === "distro")
+            return SystemInfo.distroIcon;
+        if (!icon || icon.length === 0)
+            return "spark-symbolic";
+        if (icon.includes("/") || icon.endsWith(".svg") || icon.endsWith("-symbolic"))
+            return icon;
+        return `${icon}-symbolic`;
+    }
 
     property real buttonPadding: 5
     implicitWidth: distroIcon.width + buttonPadding * 2
@@ -50,9 +61,9 @@ RippleButton {
     CustomIcon {
         id: distroIcon
         anchors.centerIn: parent
-        width: 19.5
-        height: 19.5
-        source: Config.options.bar.topLeftIcon == 'distro' ? SystemInfo.distroIcon : `${Config.options.bar.topLeftIcon}-symbolic`
+        width: leftSidebarButton.sideButtonIconSize
+        height: leftSidebarButton.sideButtonIconSize
+        source: leftSidebarButton.resolvedIconSource
         colorize: true
         color: Appearance.colors.colOnLayer0
 

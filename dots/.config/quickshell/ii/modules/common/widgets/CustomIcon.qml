@@ -16,6 +16,7 @@ Item {
     IconImage {
         id: iconImage
         anchors.fill: parent
+        smooth: true
         source: {
             const fullPathWhenSourceIsIconName = iconFolder + "/" + root.source;
             if (iconFolder && fullPathWhenSourceIsIconName) {
