@@ -1,6 +1,7 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "../bar/TimerFormat.js" as TimerFormat
 import QtQuick
 import QtQuick.Layouts
 
@@ -29,12 +30,6 @@ Item {
         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
     }
 
-    function formatTime(time) {
-        const sec = Math.floor(time/100)
-        return (sec%60).toString().padStart(2,'0') + "\n" +
-        (time%100).toString().padStart(2,'0')
-    }
-
     ColumnLayout {
         id: columnLayout
         anchors.centerIn: parent
@@ -52,8 +47,8 @@ Item {
                 }
 
                 StyledText {
-                    Layout.preferredWidth: 10 // we have to set a fixed size to prevent flickering
-                    text: formatTime(TimerService.stopwatchTime)
+                    Layout.preferredWidth: 10
+                    text: TimerFormat.formatVerticalStopwatch(TimerService.stopwatchTime)
                     color: Appearance.colors.colOnPrimary
                 }
             }  
@@ -88,10 +83,7 @@ Item {
                 }
 
                 StyledText {
-                    text: {
-                        const t = TimerService.pomodoroSecondsLeft
-                        return Math.floor(t/60).toString().padStart(2,'0') + "\n" + (t%60).toString().padStart(2,'0')
-                    }
+                    text: TimerFormat.formatVerticalPomodoro(TimerService.pomodoroSecondsLeft)
                     color: Appearance.colors.colOnPrimary
                 }
             }
