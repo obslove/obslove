@@ -1,6 +1,7 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import "./cards"
+import "./TimerFormat.js" as TimerFormat
 import qs.services
 import QtQuick
 import QtQuick.Layouts
@@ -38,17 +39,23 @@ StyledPopup {
         return todoText;
     }
 
-    function formatTimerDisplay(seconds) {
-        let m = Math.floor(seconds / 60);
-        let s = seconds % 60;
-        return m + ":" + (s < 10 ? "0" : "") + s;
-    }
-
     function getDayProgressPercent() {
         const date = DateTime.clock.date
         const secondsPassed = date.getHours() * 3600 + date.getMinutes() * 60 +date.getSeconds()
 
         return Math.floor((secondsPassed / 86400) * 100)
+    }
+
+    function timerPillText() {
+        if (TimerService.pomodoroRunning) {
+            return TimerFormat.formatPomodoro(TimerService.pomodoroSecondsLeft);
+        }
+
+        if (TimerService.stopwatchTime > 0) {
+            return TimerFormat.formatStopwatch(TimerService.stopwatchTime);
+        }
+
+        return Translation.tr("Timer Off");
     }
 
     ColumnLayout {
@@ -59,7 +66,6 @@ StyledPopup {
         HeroCard {
             id: clockHero
             icon: "schedule"
-            adaptiveWidth: true
 
             title: root.formattedTime
             subtitle: root.formattedDate
@@ -86,90 +92,13 @@ StyledPopup {
             }
 
             InfoPill {
-                textContent: Loader {
-                    anchors.centerIn: parent
-                    sourceComponent: TimerService.pomodoroRunning ? pomodoroText : (TimerService.stopwatchTime > 0 ? stopwatchText : timerOffText)
-                }
-                
+                text: root.timerPillText()
                 containerColor: TimerService.pomodoroBreak ? Appearance.colors.colTertiaryContainer : (TimerService.pomodoroRunning || TimerService.stopwatchRunning ? Appearance.colors.colPrimaryContainer : Appearance.colors.colSecondaryContainer)
                 color: containerColor
                 shapeColor: TimerService.pomodoroBreak ? Appearance.colors.colTertiary : (TimerService.pomodoroRunning || TimerService.stopwatchRunning ? Appearance.colors.colPrimary : Appearance.colors.colSecondary)
                 symbolColor: TimerService.pomodoroBreak ? Appearance.colors.colOnTertiary : (TimerService.pomodoroRunning || TimerService.stopwatchRunning ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSecondary)
                 textColor: TimerService.pomodoroBreak ? Appearance.colors.colOnTertiaryContainer : (TimerService.pomodoroRunning || TimerService.stopwatchRunning ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colOnSecondaryContainer)
                 icon: TimerService.pomodoroBreak ? "coffee" : root.stopwatchPaused ? "timer_pause" : TimerService.stopwatchRunning ? "timer_play" : "timer"
-            }
-        }
-
-        Component {
-            id: timerOffText
-            StyledText {
-                text: Translation.tr("Timer Off")
-                font.pixelSize: Appearance.font.pixelSize.large
-                font.family: Appearance.font.family.title
-                font.weight: Font.Bold
-            }
-        }
-
-        Component {
-            id: pomodoroText
-            StyledText {
-                visible: TimerService.pomodoroRunning
-                text: root.formatTimerDisplay(TimerService.pomodoroSecondsLeft)
-                font.pixelSize: Appearance.font.pixelSize.large
-                font.family: Appearance.font.family.title
-                font.weight: Font.Bold
-            }
-        }
-
-        Component {
-            id: stopwatchText
-            RowLayout {
-                id: textLayout
-                visible: TimerService.stopwatchTime > 0
-                width: 70 // To prevent shakiness
-                anchors.centerIn: parent
-                spacing: 0
-
-                SequentialAnimation {
-                    running: root.stopwatchPaused
-                    loops: Animation.Infinite
-
-                    ScriptAction { script: textLayout.visible = true }
-                    PauseAnimation { duration: 700 }
-                    ScriptAction { script: textLayout.visible = false }
-                    PauseAnimation { duration: 700 }
-
-                    onStopped: {
-                        if (TimerService.stopwatchTime <= 0) return
-                        textLayout.visible = true
-                    }
-                }
-
-                StyledText {
-                    color: Appearance.m3colors.m3onSurface
-                    font.pixelSize: Appearance.font.pixelSize.large
-                    font.family: Appearance.font.family.title
-                    font.weight: Font.Bold
-
-                    text: {
-                        let totalSeconds = Math.floor(TimerService.stopwatchTime) / 100
-                        let minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0')
-                        let seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0')
-                        return `${minutes}:${seconds}`
-                    }
-                }
-
-                StyledText {
-                    Layout.fillWidth: true
-                    color: Appearance.colors.colSubtext
-                    font.pixelSize: Appearance.font.pixelSize.large
-                    font.family: Appearance.font.family.title
-                    font.weight: Font.Bold
-
-                    text: {
-                        return `:<sub>${(Math.floor(TimerService.stopwatchTime) % 100).toString().padStart(2, '0')}</sub>`
-                    }
-                }
             }
         }
 

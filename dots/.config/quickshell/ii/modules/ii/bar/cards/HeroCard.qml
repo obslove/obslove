@@ -10,26 +10,25 @@ Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: implicitHeight
     Layout.preferredWidth: implicitWidth
-    implicitWidth: adaptiveWidth ? Math.max(Math.max(220 + titleMetrics.width, 180 + subtitleMetrics.width), 380) : 380  // fixed sizes to keep consistency
+    implicitWidth: compactMode ? 360 : 440  // fixed sizes to keep consistency
     implicitHeight: compactMode ? 150 : 180
 
     radius: Appearance.rounding.normal
     color: Appearance.colors.colPrimaryContainer
 
     property bool compactMode: false
-    property bool adaptiveWidth: false
 
-    property int margins: 24
-    property int iconSize: 110
-    property real iconFontSize: 48
+    property int margins: compactMode ? 16 : 14
+    property int iconSize: compactMode ? 104 : 124
+    property real iconFontSize: heroCardRoot.iconSize * 0.48
 
     property string shapeString: "Cookie9Sided"
     property string icon: ""
 
     property string title: ""
     property string subtitle: ""
-    property int titleSize: compactMode ? Appearance.font.pixelSize.huge : Appearance.font.pixelSize.hugeass * 2.5
-    property int subtitleSize: compactMode ? Appearance.font.pixelSize.large : Appearance.font.pixelSize.hugeass
+    property int titleSize: compactMode ? Appearance.font.pixelSize.huge : Appearance.font.pixelSize.hugeass * 2
+    property int subtitleSize: Appearance.font.pixelSize.large
 
     property string pillText: ""
     property string pillIcon: ""
@@ -40,20 +39,8 @@ Rectangle {
 
     default property alias content: extraContent.data
     property alias shapeContent: shapeItem.data
-    property int spacing: 16
-    readonly property real textBlockWidth: Math.max(200, heroCardRoot.width - heroCardRoot.iconSize - heroCardRoot.margins * 3)
-
-    TextMetrics {
-        id: titleMetrics
-        text: heroCardRoot.title
-        font.pixelSize: heroCardRoot.titleSize
-    }
-
-    TextMetrics {
-        id: subtitleMetrics
-        text: heroCardRoot.subtitle
-        font.pixelSize: heroCardRoot.subtitleSize
-    }
+    property int spacing: 12
+    readonly property real textBlockWidth: Math.max(compactMode ? 200 : 220, heroCardRoot.width - heroCardRoot.iconSize - heroCardRoot.margins * 3)
 
     MaterialShape {
         id: shapeItem

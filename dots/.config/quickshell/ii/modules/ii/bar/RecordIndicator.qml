@@ -1,10 +1,10 @@
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+import "./cards"
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import "./cards"
 
 
 MouseArea {

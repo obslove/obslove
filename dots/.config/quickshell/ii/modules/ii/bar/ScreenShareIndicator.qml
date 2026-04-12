@@ -1,11 +1,11 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "./cards"
 import QtQuick
 import QtQuick.Shapes
 import QtQuick.Layouts
 import Quickshell.Io
-import "./cards"
 
 MouseArea {
     id: indicator

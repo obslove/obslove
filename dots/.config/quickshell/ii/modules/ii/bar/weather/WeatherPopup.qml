@@ -123,8 +123,6 @@ StyledPopup {
         HeroCard {
             id: weatherHero
             Layout.minimumWidth: 320
-            margins: 20
-            iconSize: 100
             icon: Icons.getWeatherIcon(Weather.data.wCode)
             pillText: Weather.data.city || "--"
             pillIcon: Weather.data.city ? "location_on" : ""

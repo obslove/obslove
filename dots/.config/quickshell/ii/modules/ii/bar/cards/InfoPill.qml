@@ -32,8 +32,7 @@ Rectangle {
     property color textColor: Appearance.colors.colOnSecondaryContainer
 
     default property alias shapeContent: shapeItem.children
-    property alias textContent: pillText.children
-    property alias text: pillText.text
+    property string text: ""
 
     MaterialShape {
         id: shapeItem
@@ -61,6 +60,7 @@ Rectangle {
     StyledText {
         id: pillText
         visible: !root.compact
+        text: root.text
         anchors {
             verticalCenter: parent.verticalCenter
             horizontalCenter: parent.horizontalCenter
