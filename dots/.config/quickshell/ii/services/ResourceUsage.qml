@@ -7,7 +7,7 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * Simple polled resource usage service with RAM, Swap, and CPU usage.
+ * Simple polled resource usage service with RAM, Swap, CPU, storage, and GPU usage.
  */
 Singleton {
     id: root
@@ -20,9 +20,15 @@ Singleton {
 	property real swapUsed: swapTotal - swapFree
     property real swapUsedPercentage: swapTotal > 0 ? (swapUsed / swapTotal) : 0
     property real diskTotal: 1
+    property real diskFree: 0
     property real diskUsed: 0
     property real diskUsedPercentage: diskTotal > 0 ? (diskUsed / diskTotal) : 0
     property real cpuUsage: 0
+    property bool gpuAvailable: false
+    property real gpuUsage: 0
+    property real gpuTemperature: -1
+    property real gpuMemoryUsed: 0
+    property real gpuMemoryTotal: 1
     property var previousCpuStats
     property string cpuModel: "Unknown CPU"
     property string cpuFreq: "-- MHz"
@@ -103,21 +109,32 @@ Singleton {
             const textCpu = fileCpuInfo.text()
             if (root.cpuModel === "Unknown CPU" && textCpu.length > 0) {
                 const modelMatch = textCpu.match(/model name\s+:\s+(.*)/)
-                if (!modelMatch) return
-                // i hope these are enough to shorten the string
-                root.cpuModel = modelMatch[1]
-                    .replace(/\(.*?\)/g, "")              // (R), (TM) vs
-                    .replace(/with.*$/i, "")              // with Radeon...
-                    .replace(/@\s*[\d.]+\s*GHz/i, "")     // @ 2.60GHz
-                    .replace(/\b\d+-Core\b/gi, "")        // 6-Core
-                    .replace(/\b\d+\s*Cores?\b/gi, "")    // 6 Cores
-                    .replace(/\bCPU\b/gi, "")
-                    .replace(/\bProcessor\b/gi, "")
-                    .replace(/\s+/g, " ")
-                    .trim() 
+                if (modelMatch) {
+                    // i hope these are enough to shorten the string
+                    root.cpuModel = modelMatch[1]
+                        .replace(/\(.*?\)/g, "")              // (R), (TM) vs
+                        .replace(/with.*$/i, "")              // with Radeon...
+                        .replace(/@\s*[\d.]+\s*GHz/i, "")     // @ 2.60GHz
+                        .replace(/\b\d+-Core\b/gi, "")        // 6-Core
+                        .replace(/\b\d+\s*Cores?\b/gi, "")    // 6 Cores
+                        .replace(/\bCPU\b/gi, "")
+                        .replace(/\bProcessor\b/gi, "")
+                        .replace(/\s+/g, " ")
+                        .trim()
+                }
             }
             const freqMatch = textCpu.match(/cpu MHz\s+:\s+([\d.]+)/)
             if (freqMatch) root.cpuFreq = parseInt(freqMatch[1]) + " MHz"
+
+            if (!fetchCpuTemperatureProc.running) {
+                fetchCpuTemperatureProc.running = true
+            }
+            if (!fetchStorageProc.running) {
+                fetchStorageProc.running = true
+            }
+            if (!fetchGpuProc.running) {
+                fetchGpuProc.running = true
+            }
 
             root.updateHistories()
         }
@@ -142,51 +159,86 @@ Singleton {
             }
         }
     }
-    
     Process {
-        id: diskProc
-        command: ["bash", "-c", "df -k / | awk 'NR==2{print $2, $3}'"]
+        id: fetchCpuTemperatureProc
+        environment: ({
+            LANG: "C",
+            LC_ALL: "C"
+        })
+        command: ["bash", "-lc", "command -v sensors >/dev/null 2>&1 || exit 0; sensors 2>/dev/null | awk '/Package id 0:/ {gsub(/\\+|°C/, \"\", $4); print $4; exit} /Tctl:/ {gsub(/\\+|°C/, \"\", $2); print $2; exit} /Tdie:/ {gsub(/\\+|°C/, \"\", $2); print $2; exit}'"]
         stdout: StdioCollector {
+            id: cpuTemperatureCollector
             onStreamFinished: {
-                if (text.length > 0) {
-                    var parts = text.trim().split(/\s+/);
-                    if (parts.length === 2) {
-                        root.diskTotal = parseInt(parts[0]); // KB
-                        root.diskUsed = parseInt(parts[1]);  // KB
-                    }
+                const parsedValue = parseFloat(cpuTemperatureCollector.text.trim())
+                root.cpuTemp = Number.isFinite(parsedValue) ? `${Math.round(parsedValue)}°C` : "--°C"
+            }
+        }
+        onExited: (exitCode) => {
+            if (exitCode !== 0)
+                root.cpuTemp = "--°C"
+        }
+    }
+
+    Process {
+        id: fetchStorageProc
+        environment: ({
+            LANG: "C",
+            LC_ALL: "C"
+        })
+        command: ["bash", "-lc", "df -kP / 2>/dev/null | awk 'NR==2 {print $2, $3, $4}'"]
+        stdout: StdioCollector {
+            id: storageCollector
+            onStreamFinished: {
+                const fields = storageCollector.text.trim().split(/\s+/)
+                if (fields.length >= 3) {
+                    root.diskTotal = Number(fields[0]) || 1
+                    root.diskUsed = Number(fields[1]) || 0
+                    root.diskFree = Number(fields[2]) || 0
                 }
             }
         }
     }
 
-    Timer {
-        interval: 60000
-        running: true
-        repeat: true
-        onTriggered: diskProc.running = true
-    }
-
     Process {
-        id: tempProc
-        command: ["bash", "-c", "sensors | awk '/Tctl:/ {print $2}; /Package id 0:/ {print $4}' | head -1 | tr -d '+' | cut -d'.' -f1"]
+        id: fetchGpuProc
+        environment: ({
+            LANG: "C",
+            LC_ALL: "C"
+        })
+        command: ["bash", "-lc", "command -v nvidia-smi >/dev/null 2>&1 || exit 0; nvidia-smi --query-gpu=utilization.gpu,temperature.gpu,memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null | head -n1"]
         stdout: StdioCollector {
+            id: gpuCollector
             onStreamFinished: {
-                if (text.length > 0) {
-                    root.cpuTemp = text.trim() + "°C";
+                const fields = gpuCollector.text.trim().split(/\s*,\s*/)
+                if (fields.length >= 4) {
+                    root.gpuAvailable = true
+                    root.gpuUsage = (Number(fields[0]) || 0) / 100
+                    root.gpuTemperature = Number(fields[1])
+                    root.gpuMemoryUsed = Number(fields[2]) || 0
+                    root.gpuMemoryTotal = Number(fields[3]) || 1
+                } else {
+                    root.gpuAvailable = false
+                    root.gpuUsage = 0
+                    root.gpuTemperature = -1
+                    root.gpuMemoryUsed = 0
+                    root.gpuMemoryTotal = 1
                 }
             }
         }
-    }
-
-    Timer {
-        interval: 3000
-        running: true
-        repeat: true
-        onTriggered: tempProc.running = true
+        onExited: (exitCode) => {
+            if (exitCode !== 0) {
+                root.gpuAvailable = false
+                root.gpuUsage = 0
+                root.gpuTemperature = -1
+                root.gpuMemoryUsed = 0
+                root.gpuMemoryTotal = 1
+            }
+        }
     }
 
     Component.onCompleted: {
-        diskProc.running = true
-        tempProc.running = true
+        fetchCpuTemperatureProc.running = true
+        fetchStorageProc.running = true
+        fetchGpuProc.running = true
     }
 }
