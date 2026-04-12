@@ -10,8 +10,8 @@ StyledPopup {
     id: root
     popupRadius: Appearance.rounding.large
 
-    property int cardMargins: 10
-    property int cardSpacing: 5
+    property int cardMargins: 14
+    property int cardSpacing: 8
     property int gridSpacing: 8
 
     function formatGB(kb) {
@@ -101,22 +101,17 @@ StyledPopup {
 
     contentItem: ColumnLayout {
         anchors.centerIn: parent
-        spacing: 10
+        spacing: 12
 
         HeroCard {
             Layout.minimumWidth: 700
-            implicitHeight: 132
-            margins: 16
             icon: root.powerProfileIcon(PowerProfiles.profile)
-            iconSize: 90
             title: Translation.tr("Power Profile")
             subtitle: root.powerProfileLabel(PowerProfiles.profile)
-            titleSize: Appearance.font.pixelSize.hugeass * 1.7
-            subtitleSize: Appearance.font.pixelSize.large
 
             RowLayout {
                 Layout.alignment: Qt.AlignRight
-                spacing: 4
+                spacing: 6
 
                 Repeater {
                     model: PowerProfiles.hasPerformanceProfile
@@ -137,8 +132,8 @@ StyledPopup {
                             ? activeContainerColor
                             : inactiveContainerColor
                         border.width: 0
-                        implicitHeight: modeRow.implicitHeight + 8
-                        implicitWidth: modeRow.implicitWidth + 12
+                        implicitHeight: modeRow.implicitHeight + 10
+                        implicitWidth: modeRow.implicitWidth + 14
 
                         MouseArea {
                             anchors.fill: parent
@@ -149,12 +144,12 @@ StyledPopup {
                         RowLayout {
                             id: modeRow
                             anchors.centerIn: parent
-                            spacing: 4
+                            spacing: 6
 
                             MaterialSymbol {
                                 text: root.powerProfileIcon(modelData)
                                 fill: 0
-                                iconSize: Appearance.font.pixelSize.small
+                                iconSize: Appearance.font.pixelSize.normal
                                 color: active
                                     ? activeContentColor
                                     : inactiveContentColor
@@ -162,7 +157,7 @@ StyledPopup {
 
                             StyledText {
                                 text: root.powerProfileLabel(modelData)
-                                font.pixelSize: Appearance.font.pixelSize.smaller
+                                font.pixelSize: Appearance.font.pixelSize.small
                                 font.weight: active ? Font.Bold : Font.DemiBold
                                 color: active
                                     ? activeContentColor
@@ -191,6 +186,7 @@ StyledPopup {
                     spacing: root.cardSpacing
                     showDivider: false
                     title: Translation.tr("GPU")
+                    subtitle: ResourceUsage.gpuModel !== "Unknown GPU" ? ResourceUsage.gpuModel : ""
                     icon: "memory_alt"
                     headerExtra: [
                         InfoPill {
@@ -281,6 +277,7 @@ StyledPopup {
                 spacing: root.cardSpacing
                 showDivider: false
                 title: Translation.tr("CPU")
+                subtitle: ResourceUsage.cpuModel !== "Unknown CPU" ? ResourceUsage.cpuModel : ""
                 icon: "planner_review"
                 headerExtra: [
                     InfoPill {

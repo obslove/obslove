@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import qs.modules.common
+import qs.modules.common.functions
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -25,10 +26,12 @@ Singleton {
     property real diskUsedPercentage: diskTotal > 0 ? (diskUsed / diskTotal) : 0
     property real cpuUsage: 0
     property bool gpuAvailable: false
+    property bool gpuProbeFinished: false
     property real gpuUsage: 0
     property real gpuTemperature: -1
     property real gpuMemoryUsed: 0
     property real gpuMemoryTotal: 1
+    property string gpuModel: "Unknown GPU"
     property var previousCpuStats
     property string cpuModel: "Unknown CPU"
     property string cpuFreq: "-- MHz"
@@ -71,74 +74,78 @@ Singleton {
         updateCpuUsageHistory()
     }
 
+    function pollResources() {
+        // Reload files
+        fileMeminfo.reload()
+        fileStat.reload()
+
+        // Parse memory and swap usage
+        const textMeminfo = fileMeminfo.text()
+        memoryTotal = Number(textMeminfo.match(/MemTotal: *(\d+)/)?.[1] ?? 1)
+        memoryFree = Number(textMeminfo.match(/MemAvailable: *(\d+)/)?.[1] ?? 0)
+        swapTotal = Number(textMeminfo.match(/SwapTotal: *(\d+)/)?.[1] ?? 1)
+        swapFree = Number(textMeminfo.match(/SwapFree: *(\d+)/)?.[1] ?? 0)
+
+        // Parse CPU usage
+        const textStat = fileStat.text()
+        const cpuLine = textStat.match(/^cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/)
+        if (cpuLine) {
+            const stats = cpuLine.slice(1).map(Number)
+            const total = stats.reduce((a, b) => a + b, 0)
+            const idle = stats[3]
+
+            if (previousCpuStats) {
+                const totalDiff = total - previousCpuStats.total
+                const idleDiff = idle - previousCpuStats.idle
+                cpuUsage = totalDiff > 0 ? (1 - idleDiff / totalDiff) : 0
+            }
+
+            previousCpuStats = { total, idle }
+        }
+
+        // Parse CPU info
+        fileCpuInfo.reload()
+        const textCpu = fileCpuInfo.text()
+        if (root.cpuModel === "Unknown CPU" && textCpu.length > 0) {
+            const modelMatch = textCpu.match(/model name\s+:\s+(.*)/)
+            if (modelMatch) {
+                // i hope these are enough to shorten the string
+                root.cpuModel = modelMatch[1]
+                    .replace(/\(.*?\)/g, "")              // (R), (TM) vs
+                    .replace(/with.*$/i, "")              // with Radeon...
+                    .replace(/@\s*[\d.]+\s*GHz/i, "")     // @ 2.60GHz
+                    .replace(/\b\d+-Core\b/gi, "")        // 6-Core
+                    .replace(/\b\d+\s*Cores?\b/gi, "")    // 6 Cores
+                    .replace(/\bCPU\b/gi, "")
+                    .replace(/\bProcessor\b/gi, "")
+                    .replace(/\s+/g, " ")
+                    .trim()
+            }
+        }
+        const freqMatch = textCpu.match(/cpu MHz\s+:\s+([\d.]+)/)
+        if (freqMatch) root.cpuFreq = parseInt(freqMatch[1]) + " MHz"
+
+        if (!fetchCpuTemperatureProc.running) {
+            fetchCpuTemperatureProc.running = true
+        }
+        if (!fetchStorageProc.running) {
+            fetchStorageProc.running = true
+        }
+        if (!fetchGpuProc.running) {
+            fetchGpuProc.running = true
+        }
+
+        root.updateHistories()
+    }
+
 	Timer {
 		interval: Config.options?.resources?.updateInterval ?? 3000
-        running: true 
+        running: true
         repeat: true
-		onTriggered: {
-            // Reload files
-            fileMeminfo.reload()
-            fileStat.reload()
-
-            // Parse memory and swap usage
-            const textMeminfo = fileMeminfo.text()
-            memoryTotal = Number(textMeminfo.match(/MemTotal: *(\d+)/)?.[1] ?? 1)
-            memoryFree = Number(textMeminfo.match(/MemAvailable: *(\d+)/)?.[1] ?? 0)
-            swapTotal = Number(textMeminfo.match(/SwapTotal: *(\d+)/)?.[1] ?? 1)
-            swapFree = Number(textMeminfo.match(/SwapFree: *(\d+)/)?.[1] ?? 0)
-
-            // Parse CPU usage
-            const textStat = fileStat.text()
-            const cpuLine = textStat.match(/^cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/)
-            if (cpuLine) {
-                const stats = cpuLine.slice(1).map(Number)
-                const total = stats.reduce((a, b) => a + b, 0)
-                const idle = stats[3]
-
-                if (previousCpuStats) {
-                    const totalDiff = total - previousCpuStats.total
-                    const idleDiff = idle - previousCpuStats.idle
-                    cpuUsage = totalDiff > 0 ? (1 - idleDiff / totalDiff) : 0
-                }
-
-                previousCpuStats = { total, idle }
-            }
-
-            // Parse CPU info
-            fileCpuInfo.reload()
-            const textCpu = fileCpuInfo.text()
-            if (root.cpuModel === "Unknown CPU" && textCpu.length > 0) {
-                const modelMatch = textCpu.match(/model name\s+:\s+(.*)/)
-                if (modelMatch) {
-                    // i hope these are enough to shorten the string
-                    root.cpuModel = modelMatch[1]
-                        .replace(/\(.*?\)/g, "")              // (R), (TM) vs
-                        .replace(/with.*$/i, "")              // with Radeon...
-                        .replace(/@\s*[\d.]+\s*GHz/i, "")     // @ 2.60GHz
-                        .replace(/\b\d+-Core\b/gi, "")        // 6-Core
-                        .replace(/\b\d+\s*Cores?\b/gi, "")    // 6 Cores
-                        .replace(/\bCPU\b/gi, "")
-                        .replace(/\bProcessor\b/gi, "")
-                        .replace(/\s+/g, " ")
-                        .trim()
-                }
-            }
-            const freqMatch = textCpu.match(/cpu MHz\s+:\s+([\d.]+)/)
-            if (freqMatch) root.cpuFreq = parseInt(freqMatch[1]) + " MHz"
-
-            if (!fetchCpuTemperatureProc.running) {
-                fetchCpuTemperatureProc.running = true
-            }
-            if (!fetchStorageProc.running) {
-                fetchStorageProc.running = true
-            }
-            if (!fetchGpuProc.running) {
-                fetchGpuProc.running = true
-            }
-
-            root.updateHistories()
-        }
+		onTriggered: root.pollResources()
 	}
+
+    Component.onCompleted: root.pollResources()
 
 	FileView { id: fileMeminfo; path: "/proc/meminfo" }
     FileView { id: fileStat; path: "/proc/stat" }
@@ -205,40 +212,41 @@ Singleton {
             LANG: "C",
             LC_ALL: "C"
         })
-        command: ["bash", "-lc", "command -v nvidia-smi >/dev/null 2>&1 || exit 0; nvidia-smi --query-gpu=utilization.gpu,temperature.gpu,memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null | head -n1"]
+        command: ["bash", FileUtils.trimFileProtocol(`${Directories.scriptPath}/hardware/probe-gpu.sh`)]
         stdout: StdioCollector {
             id: gpuCollector
             onStreamFinished: {
+                root.gpuProbeFinished = true
                 const fields = gpuCollector.text.trim().split(/\s*,\s*/)
                 if (fields.length >= 4) {
+                    const parsedGpuModel = fields.length >= 5 ? fields.slice(4).join(", ").trim() : ""
                     root.gpuAvailable = true
                     root.gpuUsage = (Number(fields[0]) || 0) / 100
                     root.gpuTemperature = Number(fields[1])
                     root.gpuMemoryUsed = Number(fields[2]) || 0
                     root.gpuMemoryTotal = Number(fields[3]) || 1
+                    root.gpuModel = parsedGpuModel || "Unknown GPU"
                 } else {
                     root.gpuAvailable = false
                     root.gpuUsage = 0
                     root.gpuTemperature = -1
                     root.gpuMemoryUsed = 0
                     root.gpuMemoryTotal = 1
+                    root.gpuModel = "Unknown GPU"
                 }
             }
         }
         onExited: (exitCode) => {
+            root.gpuProbeFinished = true
             if (exitCode !== 0) {
                 root.gpuAvailable = false
                 root.gpuUsage = 0
                 root.gpuTemperature = -1
                 root.gpuMemoryUsed = 0
                 root.gpuMemoryTotal = 1
+                root.gpuModel = "Unknown GPU"
             }
         }
     }
 
-    Component.onCompleted: {
-        fetchCpuTemperatureProc.running = true
-        fetchStorageProc.running = true
-        fetchGpuProc.running = true
-    }
 }

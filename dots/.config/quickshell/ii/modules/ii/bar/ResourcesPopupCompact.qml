@@ -48,11 +48,15 @@ StyledPopup {
         spacing: 12
 
         HeroCard {
-            Layout.minimumWidth: 360
-            icon: root.powerProfileIcon(PowerProfiles.profile)
+            implicitWidth: 440
+            implicitHeight: 168
+            margins: 14
             iconSize: 100
+            icon: root.powerProfileIcon(PowerProfiles.profile)
             title: Translation.tr("Power Profile")
             subtitle: root.powerProfileLabel(PowerProfiles.profile)
+            titleSize: Math.round(Appearance.font.pixelSize.hugeass * 1.65)
+            subtitleSize: Appearance.font.pixelSize.large
 
             RowLayout {
                 Layout.alignment: Qt.AlignRight
@@ -67,16 +71,17 @@ StyledPopup {
                         required property int modelData
 
                         readonly property bool active: root.isActivePowerProfile(modelData)
+                        readonly property color activeContainerColor: Appearance.colors.colPrimary
+                        readonly property color inactiveContainerColor: Qt.alpha(Appearance.colors.colPrimary, 0.28)
+                        readonly property color activeContentColor: Appearance.colors.colOnPrimary
+                        readonly property color inactiveContentColor: Appearance.colors.colOnPrimaryContainer
 
                         radius: Appearance.rounding.large
                         color: active
-                            ? Appearance.colors.colSecondaryContainer
-                            : Qt.alpha(Appearance.colors.colOnPrimaryContainer, 0.08)
-                        border.width: 1
-                        border.color: active
-                            ? Qt.alpha(Appearance.colors.colOnSecondaryContainer, 0.16)
-                            : Qt.alpha(Appearance.colors.colOnPrimaryContainer, 0.12)
-                        implicitHeight: modeRow.implicitHeight + 10
+                            ? activeContainerColor
+                            : inactiveContainerColor
+                        border.width: 0
+                        implicitHeight: modeRow.implicitHeight + 8
                         implicitWidth: modeRow.implicitWidth + 12
 
                         MouseArea {
@@ -95,8 +100,8 @@ StyledPopup {
                                 fill: 0
                                 iconSize: Appearance.font.pixelSize.small
                                 color: active
-                                    ? Appearance.colors.colOnSecondaryContainer
-                                    : Appearance.colors.colOnPrimaryContainer
+                                    ? activeContentColor
+                                    : inactiveContentColor
                             }
 
                             StyledText {
@@ -104,8 +109,8 @@ StyledPopup {
                                 font.pixelSize: Appearance.font.pixelSize.smaller
                                 font.weight: active ? Font.Bold : Font.DemiBold
                                 color: active
-                                    ? Appearance.colors.colOnSecondaryContainer
-                                    : Appearance.colors.colOnPrimaryContainer
+                                    ? activeContentColor
+                                    : inactiveContentColor
                             }
                         }
                     }

@@ -1,6 +1,7 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
+import qs.services
 import QtQuick
 import QtQuick.Effects
 import Quickshell
@@ -14,12 +15,28 @@ LazyLoader {
     property int popupRadius: Appearance.rounding.large
     property bool animate: true
     property bool forceActive: false
+    property bool suppressHover: false
+    property bool dismissOnOutsideClickWhenForced: false
+    signal outsideDismissRequested()
 
-    active: root.forceActive || (hoverTarget && hoverTarget.containsMouse)
+    active: root.forceActive || (!root.suppressHover && hoverTarget && hoverTarget.containsMouse)
 
     component: PanelWindow {
         id: popupWindow
         color: "transparent"
+
+        function syncDismissable() {
+            if (!root.dismissOnOutsideClickWhenForced) {
+                GlobalFocusGrab.removeDismissable(popupWindow);
+                return;
+            }
+
+            if (root.forceActive) {
+                GlobalFocusGrab.addDismissable(popupWindow);
+            } else {
+                GlobalFocusGrab.removeDismissable(popupWindow);
+            }
+        }
 
         readonly property real screenWidth: popupWindow.screen?.width ?? 0
         readonly property real screenHeight: popupWindow.screen?.height ?? 0
@@ -72,6 +89,31 @@ LazyLoader {
 
         WlrLayershell.namespace: "quickshell:popup"
         WlrLayershell.layer: WlrLayer.Overlay
+
+        Component.onCompleted: syncDismissable()
+        Component.onDestruction: GlobalFocusGrab.removeDismissable(popupWindow)
+
+        Connections {
+            target: root
+
+            function onForceActiveChanged() {
+                popupWindow.syncDismissable();
+            }
+
+            function onDismissOnOutsideClickWhenForcedChanged() {
+                popupWindow.syncDismissable();
+            }
+        }
+
+        Connections {
+            target: GlobalFocusGrab
+
+            function onDismissed() {
+                if (root.dismissOnOutsideClickWhenForced && root.forceActive) {
+                    root.outsideDismissRequested();
+                }
+            }
+        }
 
         StyledRectangularShadow {
             target: popupBackground

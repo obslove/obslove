@@ -12,12 +12,21 @@ MouseArea {
     cursorShape: Qt.PointingHandCursor
     property bool compactMode: Config.options.bar.tooltips.compactPopups
     property bool popupPinned: false
+    property bool suppressHoverPopup: false
 
     acceptedButtons: Qt.MiddleButton | Qt.BackButton | Qt.ForwardButton | Qt.RightButton | Qt.LeftButton
 
+    onExited: root.suppressHoverPopup = false
+
     onPressed: mouse => {
         if (mouse.button === Qt.LeftButton) {
-            root.popupPinned = !root.popupPinned
+            if (root.popupPinned) {
+                root.popupPinned = false
+                root.suppressHoverPopup = true
+            } else {
+                root.suppressHoverPopup = false
+                root.popupPinned = true
+            }
             mouse.accepted = true
         }
     }
@@ -28,7 +37,7 @@ MouseArea {
         anchors.centerIn: parent
 
         Loader {
-            active: ResourceUsage.gpuAvailable
+            active: ResourceUsage.gpuAvailable || !ResourceUsage.gpuProbeFinished
             visible: active
             Layout.alignment: Qt.AlignHCenter
             sourceComponent: Resource {
@@ -72,6 +81,12 @@ MouseArea {
         Bar.ResourcesPopup {
             hoverTarget: root
             forceActive: root.popupPinned
+            suppressHover: root.suppressHoverPopup
+            dismissOnOutsideClickWhenForced: true
+            onOutsideDismissRequested: {
+                root.popupPinned = false
+                root.suppressHoverPopup = true
+            }
         }
     }
 
@@ -81,6 +96,12 @@ MouseArea {
         Bar.ResourcesPopupCompact {
             hoverTarget: root
             forceActive: root.popupPinned
+            suppressHover: root.suppressHoverPopup
+            dismissOnOutsideClickWhenForced: true
+            onOutsideDismissRequested: {
+                root.popupPinned = false
+                root.suppressHoverPopup = true
+            }
         }
     }
 }
