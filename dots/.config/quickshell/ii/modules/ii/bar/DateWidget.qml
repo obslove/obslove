@@ -14,24 +14,10 @@ Item {
         anchors.centerIn: parent
         spacing: 4
 
-        Item {
-            implicitWidth: timeMeasure.implicitWidth
-            implicitHeight: timeLabel.implicitHeight
-
-            StyledText {
-                id: timeMeasure
-                visible: false
-                font.pixelSize: Appearance.font.pixelSize.large
-                text: DateTime.sampleTime(Config.options.time.secondPrecisionTargets.barClock)
-            }
-
-            StyledText {
-                id: timeLabel
-                anchors.centerIn: parent
-                font.pixelSize: Appearance.font.pixelSize.large
-                color: Appearance.colors.colOnLayer1
-                text: DateTime.formatTime(Config.options.time.secondPrecisionTargets.barClock)
-            }
+        StyledText {
+            font.pixelSize: Appearance.font.pixelSize.small
+            color: Appearance.colors.colOnLayer1
+            text: DateTime.longDate
         }
     }
 
@@ -44,12 +30,14 @@ Item {
             active: true
             sourceComponent: Config.options.bar.tooltips.compactPopups ? clockPopupCompact : clockPopup
         }
+
         Component {
             id: clockPopup
             ClockWidgetPopup {
                 hoverTarget: mouseArea
             }
         }
+
         Component {
             id: clockPopupCompact
             ClockWidgetPopupCompact {

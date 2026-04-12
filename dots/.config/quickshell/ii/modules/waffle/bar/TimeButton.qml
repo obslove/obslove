@@ -28,9 +28,21 @@ BarButton {
             
             Column {
                 anchors.verticalCenter: parent.verticalCenter
-                WText {
-                    anchors.right: parent.right
-                    text: DateTime.formatTime(Config.options.time.secondPrecisionTargets.barClock)
+                Item {
+                    implicitWidth: timeMeasure.implicitWidth
+                    implicitHeight: timeText.implicitHeight
+
+                    WText {
+                        id: timeMeasure
+                        visible: false
+                        text: DateTime.sampleTime(Config.options.time.secondPrecisionTargets.barClock)
+                    }
+
+                    WText {
+                        id: timeText
+                        anchors.right: parent.right
+                        text: DateTime.formatTime(Config.options.time.secondPrecisionTargets.barClock)
+                    }
                 }
                 WText {
                     anchors.right: parent.right

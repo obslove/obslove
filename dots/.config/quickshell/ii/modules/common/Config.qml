@@ -310,6 +310,13 @@ Singleton {
                 property int barBackgroundStyle: 1 // 0: Transparent | 1: Visible | 2: Adaptive
                 property bool verbose: true
                 property bool vertical: false
+                property JsonObject dashboardPanelButton: JsonObject {
+                    property string iconMode: "dynamic" // dynamic | fixed
+                    property string icon: "fluent/alert.svg" // "distro", an icon basename, or a relative SVG path inside ~/.config/quickshell/ii/assets/icons
+                }
+                property JsonObject date: JsonObject {
+                    property string layout: "compact" // compact | inline
+                }
 
                 property JsonObject mediaPlayer: JsonObject {
                     property bool useFixedSize: false

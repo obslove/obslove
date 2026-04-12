@@ -15,6 +15,7 @@ ContentPage {
     property var componentMap: ({
         "active_window": activeWindow,
         "clock": clockSettings,
+        "date": dateSettings,
         "music_player": musicPlayer,
         "utility_buttons": utilityButtons,
         "system_tray": systemTray,
@@ -82,6 +83,69 @@ ContentPage {
             }
             StyledToolTip {
                 text: Translation.tr("Controls second display for the main bar clock, vertical bar clock, and waffle bar clock. Requires the global second precision switch.")
+            }
+        }
+    }
+
+    ContentSection {
+        id: dateSettings
+        icon: "calendar_month"
+        title: Translation.tr("Date")
+
+        ContentSubsection {
+            title: Translation.tr("Layout")
+
+            ConfigSelectionArray {
+                currentValue: {
+                    if (Config.options.bar.date.layout === "vertical")
+                        return "compact";
+                    if (Config.options.bar.date.layout === "horizontal")
+                        return "inline";
+                    return Config.options.bar.date.layout;
+                }
+                Component.onCompleted: {
+                    if (Config.options.bar.date.layout === "vertical")
+                        Config.options.bar.date.layout = "compact";
+                    else if (Config.options.bar.date.layout === "horizontal")
+                        Config.options.bar.date.layout = "inline";
+                }
+                onSelected: newValue => {
+                    Config.options.bar.date.layout = newValue;
+                }
+                options: [
+                    {
+                        displayName: Translation.tr("Compact"),
+                        icon: "vertical_distribute",
+                        value: "compact"
+                    },
+                    {
+                        displayName: Translation.tr("Inline"),
+                        icon: "short_text",
+                        value: "inline"
+                    }
+                ]
+            }
+        }
+
+        ContentSubsection {
+            title: Translation.tr("Format")
+            tooltip: Translation.tr("Changes the date format in the bar")
+
+            ConfigSelectionArray {
+                currentValue: Config.options.time.dateFormat
+                onSelected: newValue => {
+                    Config.options.time.dateFormat = newValue;
+                }
+                options: [
+                    {
+                        displayName: Translation.tr("Date First dd/MM"),
+                        value: "ddd dd/MM"
+                    },
+                    {
+                        displayName: Translation.tr("Month First MM/dd"),
+                        value: "ddd MM/dd"
+                    }
+                ]
             }
         }
     }

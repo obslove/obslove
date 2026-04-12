@@ -320,6 +320,8 @@
   "Low warning": "Low warning",
   "Laptop": "Laptop",
   "Waffle clock": "Waffle clock",
+  "Horizontal": "Horizontal",
+  "Layout": "Layout",
   "Controls second display for the main bar clock, vertical bar clock, and waffle bar clock. Requires the global second precision switch.": "Controls second display for the main bar clock, vertical bar clock, and waffle bar clock. Requires the global second precision switch.",
   "Controls second display for the background digital clock. Requires the global second precision switch.": "Controls second display for the background digital clock. Requires the global second precision switch.",
   "Controls second display for the cookie clock, including center digits, second hand, and rotating date. Requires the global second precision switch.": "Controls second display for the cookie clock, including center digits, second hand, and rotating date. Requires the global second precision switch.",

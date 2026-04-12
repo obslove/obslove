@@ -10,6 +10,23 @@ import Quickshell.Io
  * A nice wrapper for date and time strings.
  */
 Singleton {
+    function sampleTime(showSeconds = false) {
+        const baseFormat = Config.options?.time.format ?? "hh:mm";
+        const wantsSeconds = (Config.options?.time.secondPrecision ?? false) && showSeconds;
+        let effectiveFormat = baseFormat;
+
+        if (wantsSeconds && !baseFormat.includes("s")) {
+            effectiveFormat = baseFormat.replace(/\s+(ap|AP)\b/, ":ss $1");
+            if (effectiveFormat === baseFormat)
+                effectiveFormat = `${baseFormat}:ss`;
+        }
+
+        return effectiveFormat
+            .replace(/[hHms]/g, "8")
+            .replace(/\bap\b/g, "pm")
+            .replace(/\bAP\b/g, "PM");
+    }
+
     function formatTime(showSeconds = false) {
         const baseFormat = Config.options?.time.format ?? "hh:mm";
         const wantsSeconds = (Config.options?.time.secondPrecision ?? false) && showSeconds;

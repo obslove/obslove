@@ -205,12 +205,26 @@ LockScreen {
         id: clockTextGroup
         spacing: -3
 
-        WText {
-            anchors.horizontalCenter: parent.horizontalCenter
-            color: Looks.darkColors.fg
-            font.pixelSize: 133
-            font.weight: Looks.font.weight.strong
-            text: DateTime.formatTime(Config.options.time.secondPrecisionTargets.waffleLockClock)
+        Item {
+            implicitWidth: clockMeasure.implicitWidth
+            implicitHeight: clockLabel.implicitHeight
+
+            WText {
+                id: clockMeasure
+                visible: false
+                text: DateTime.sampleTime(Config.options.time.secondPrecisionTargets.waffleLockClock)
+                font.pixelSize: 133
+                font.weight: Looks.font.weight.strong
+            }
+
+            WText {
+                id: clockLabel
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: Looks.darkColors.fg
+                font.pixelSize: 133
+                font.weight: Looks.font.weight.strong
+                text: DateTime.formatTime(Config.options.time.secondPrecisionTargets.waffleLockClock)
+            }
         }
 
         WText {

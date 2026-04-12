@@ -66,17 +66,34 @@ Rectangle {
         Layout.bottomMargin: 10
     }
 
-    component TimeWidget: StyledText {
+    component TimeWidget: Item {
         Layout.alignment: Qt.AlignVCenter
         Layout.leftMargin: 8
         Layout.rightMargin: 6
+        implicitWidth: timeMeasure.implicitWidth
+        implicitHeight: timeLabel.implicitHeight
 
-        text: DateTime.formatTime(true)
-        color: Appearance.colors.colOnSurface
-        font {
-            family: Appearance.font.family.numbers
-            variableAxes: Appearance.font.variableAxes.numbers
-            pixelSize: 22
+        StyledText {
+            id: timeMeasure
+            visible: false
+            text: DateTime.sampleTime(true)
+            font {
+                family: Appearance.font.family.numbers
+                variableAxes: Appearance.font.variableAxes.numbers
+                pixelSize: 22
+            }
+        }
+
+        StyledText {
+            id: timeLabel
+            anchors.centerIn: parent
+            text: DateTime.formatTime(true)
+            color: Appearance.colors.colOnSurface
+            font {
+                family: Appearance.font.family.numbers
+                variableAxes: Appearance.font.variableAxes.numbers
+                pixelSize: 22
+            }
         }
     }
     

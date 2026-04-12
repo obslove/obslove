@@ -252,10 +252,17 @@ Item {
                 // Current time indicator
                 Rectangle {
                     anchors.centerIn: parent
-                    width: Math.min(timeHeaderText.implicitWidth + 16, parent.width - 4)
+                    width: Math.min(Math.max(timeHeaderText.implicitWidth, timeHeaderMeasure.implicitWidth) + 16, parent.width - 4)
                     height: 32
                     radius: Appearance.rounding.normal
                     color: Appearance.colors.colPrimary
+
+                    StyledText {
+                        id: timeHeaderMeasure
+                        visible: false
+                        text: DateTime.sampleTime(true)
+                        font.weight: Font.Medium
+                    }
 
                     StyledText {
                         id: timeHeaderText
@@ -502,10 +509,17 @@ Item {
                 Rectangle {
                     x: (timeColumn.width / 2) - (width / 2)
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(timeText.implicitWidth + 20, timeColumn.width - 4)
+                    width: Math.min(Math.max(timeText.implicitWidth, timeTextMeasure.implicitWidth) + 20, timeColumn.width - 4)
                     height: 32
                     radius: Appearance.rounding.normal
                     color: Appearance.colors.colPrimary
+
+                    Text {
+                        id: timeTextMeasure
+                        visible: false
+                        text: DateTime.sampleTime(true)
+                        font.weight: Font.Medium
+                    }
 
                     Text {
                         id: timeText

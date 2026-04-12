@@ -37,7 +37,7 @@ Item {
         "utility_buttons": [utilityButtonsComp, utilityButtonsComp],
         "system_tray": [systemTrayComp, systemTrayComp],
         "active_window": [activeWindowComp, activeWindowComp],
-        "date": [dateCompVert, dateCompVert],
+        "date": [dateComp, dateCompVert],
         "record_indicator": [recordIndicatorComp, recordIndicatorComp],
         "screen_share_indicator": [screenshareIndicatorComp, screenshareIndicatorComp],
         "timer": [timerComp, timerCompVert],
@@ -100,7 +100,15 @@ Item {
         Loader {
             id: itemLoader
             active: true
-            sourceComponent: compMap[modelData.id][vertical ? 1 : 0]
+            sourceComponent: {
+                if (modelData.id === "date") {
+                    if (vertical)
+                        return compMap[modelData.id][1];
+                    const useCompactDate = Config.options.bar.date.layout === "compact";
+                    return compMap[modelData.id][useCompactDate ? 1 : 0];
+                }
+                return compMap[modelData.id][vertical ? 1 : 0];
+            }
         }
     }
 
@@ -132,6 +140,7 @@ Item {
 
     Component { id: systemTrayComp; SysTray { vertical: rootItem.vertical } }
 
+    Component { id: dateComp; DateWidget {} }
     Component { id: dateCompVert; Vertical.VerticalDateWidget {} }
 
     Component { id: workspaceComp; Workspaces { vertical: rootItem.vertical } }
