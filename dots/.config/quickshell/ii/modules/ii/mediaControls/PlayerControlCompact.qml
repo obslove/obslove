@@ -12,7 +12,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
 
-Item { // Player instance
+Item {
     id: root
     required property MprisPlayer player
     property var artUrl: player?.trackArtUrl
@@ -25,7 +25,6 @@ Item { // Player instance
     property real maxVisualizerValue: 1000
     property int visualizerSmoothing: 2
     property real radius
-    readonly property bool canChangeVolume: (root.player?.canControl ?? false) && Number.isFinite(root.player?.volume)
 
     property string displayedArtFilePath: root.downloaded ? Qt.resolvedUrl(artFilePath) : ""
 
@@ -58,9 +57,7 @@ Item { // Player instance
         running: root.player?.playbackState == MprisPlaybackState.Playing
         interval: Config.options.resources.updateInterval
         repeat: true
-        onTriggered: {
-            root.player.positionChanged()
-        }
+        onTriggered: root.player.positionChanged()
     }
 
     onArtFilePathChanged: {
@@ -79,9 +76,7 @@ Item { // Player instance
         property string targetFile: root.artUrl
         property string artFilePath: root.artFilePath
         command: [ "bash", "-c", `[ -f ${artFilePath} ] || curl -4 -sSL '${targetFile}' -o '${artFilePath}'` ]
-        onExited: (exitCode, exitStatus) => {
-            root.downloaded = true
-        }
+        onExited: (_, __) => root.downloaded = true
     }
 
     ColorQuantizer {
@@ -139,7 +134,6 @@ Item { // Player instance
         }
 
         WaveVisualizer {
-            id: visualizerCanvas
             anchors.fill: parent
             live: root.player?.isPlaying
             points: root.visualizerPoints
@@ -148,74 +142,47 @@ Item { // Player instance
             color: blendedColors.colPrimary
         }
 
-        ColumnLayout {
+        RowLayout {
             anchors.fill: parent
             anchors.margins: 13
-            spacing: 10
+            spacing: 15
 
-            RowLayout {
-                Layout.fillWidth: true
+            Rectangle {
+                id: artBackground
                 Layout.fillHeight: true
-                spacing: 15
+                implicitWidth: height
+                radius: Appearance.rounding.verysmall
+                color: ColorUtils.transparentize(blendedColors.colLayer1, 0.5)
 
-                Rectangle {
-                    id: artBackground
-                    implicitHeight: 150
-                    implicitWidth: 150
-                    radius: Appearance.rounding.token(16)
-                    color: ColorUtils.transparentize(blendedColors.colLayer1, 0.5)
-
-                    layer.enabled: true
-                    layer.effect: OpacityMask {
-                        maskSource: Rectangle {
-                            width: artBackground.width
-                            height: artBackground.height
-                            radius: artBackground.radius
-                        }
-                    }
-
-                    StyledImage {
-                        id: mediaArt
-                        property int size: parent.height
-                        anchors.fill: parent
-                        source: root.displayedArtFilePath
-                        fillMode: Image.PreserveAspectCrop
-                        cache: false
-                        antialiasing: true
-                        width: size
-                        height: size
-                        sourceSize.width: size
-                        sourceSize.height: size
+                layer.enabled: true
+                layer.effect: OpacityMask {
+                    maskSource: Rectangle {
+                        width: artBackground.width
+                        height: artBackground.height
+                        radius: artBackground.radius
                     }
                 }
 
-                Lyrics {
-                    player: root.player
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    dimColor: blendedColors.colSubtext
-                    indicatorColor: {
-                        let c = blendedColors.colPrimaryContainer
-                        return (c && c != "#000000" && c != "transparent") ? c : root.artDominantColor
-                    }
-
-                    indicatorShapeColor: {
-                        let c = blendedColors.colOnPrimaryContainer
-                        if (c && c != "#000000" && c != "#ffffff" && c != "transparent") {
-                            return c
-                        }
-                        return blendedColors.colPrimary || "white"
-                    }
+                StyledImage {
+                    id: mediaArt
+                    property int size: parent.height
+                    anchors.fill: parent
+                    source: root.displayedArtFilePath
+                    fillMode: Image.PreserveAspectCrop
+                    cache: false
+                    antialiasing: true
+                    width: size
+                    height: size
+                    sourceSize.width: size
+                    sourceSize.height: size
                 }
             }
 
             ColumnLayout {
-                id: infoColumn
-                Layout.fillWidth: true
-                Layout.bottomMargin: 5
+                Layout.fillHeight: true
+                spacing: 2
 
                 StyledText {
-                    id: trackTitle
                     Layout.fillWidth: true
                     font.pixelSize: Appearance.font.pixelSize.large
                     color: blendedColors.colOnLayer0
@@ -227,9 +194,7 @@ Item { // Player instance
                 }
 
                 StyledText {
-                    id: trackArtist
                     Layout.fillWidth: true
-                    Layout.topMargin: -8
                     font.pixelSize: Appearance.font.pixelSize.smaller
                     color: blendedColors.colSubtext
                     elide: Text.ElideRight
@@ -240,11 +205,12 @@ Item { // Player instance
                 }
 
                 Item {
+                    Layout.fillHeight: true
+                }
+
+                Item {
                     Layout.fillWidth: true
-                    implicitHeight: Math.max(
-                        trackTime.implicitHeight + sliderRow.implicitHeight + (root.canChangeVolume ? volumeRow.implicitHeight + 8 : 0),
-                        playPauseButton.size + sliderRow.implicitHeight + 5
-                    )
+                    implicitHeight: trackTime.implicitHeight + sliderRow.implicitHeight
 
                     StyledText {
                         id: trackTime
@@ -261,8 +227,7 @@ Item { // Player instance
                     RowLayout {
                         id: sliderRow
                         anchors {
-                            bottom: root.canChangeVolume ? volumeRow.top : parent.bottom
-                            bottomMargin: root.canChangeVolume ? 8 : 0
+                            bottom: parent.bottom
                             left: parent.left
                             right: parent.right
                         }
@@ -273,7 +238,6 @@ Item { // Player instance
                         }
 
                         Item {
-                            id: progressBarContainer
                             Layout.fillWidth: true
                             implicitHeight: Math.max(sliderLoader.implicitHeight, progressBarLoader.implicitHeight)
 
@@ -287,9 +251,7 @@ Item { // Player instance
                                     trackColor: blendedColors.colSecondaryContainer
                                     handleColor: blendedColors.colPrimary
                                     value: root.player?.position / root.player?.length
-                                    onMoved: {
-                                        root.player.position = value * root.player.length;
-                                    }
+                                    onMoved: root.player.position = value * root.player.length
                                 }
                             }
 
@@ -323,43 +285,14 @@ Item { // Player instance
                         }
                     }
 
-                    RowLayout {
-                        id: volumeRow
-                        anchors {
-                            left: parent.left
-                            right: parent.right
-                            bottom: parent.bottom
-                        }
-                        visible: root.canChangeVolume
-                        spacing: 8
-
-                        MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.normal
-                            fill: 1
-                            color: blendedColors.colOnSecondaryContainer
-                            text: "music_note"
-                        }
-
-                        StyledSlider {
-                            Layout.fillWidth: true
-                            configuration: StyledSlider.Configuration.S
-                            highlightColor: blendedColors.colPrimary
-                            trackColor: blendedColors.colSecondaryContainer
-                            handleColor: blendedColors.colPrimary
-                            value: Math.max(0, Math.min(1, root.player?.volume ?? 0))
-                            onMoved: root.player.volume = value
-                        }
-                    }
-
                     RippleButton {
-                        id: playPauseButton
                         anchors.right: parent.right
                         anchors.bottom: sliderRow.top
                         anchors.bottomMargin: 5
                         property real size: 44
                         implicitWidth: size
                         implicitHeight: size
-                        downAction: () => root.player.togglePlaying();
+                        downAction: () => root.player.togglePlaying()
 
                         buttonRadius: root.player?.isPlaying ? Appearance.rounding.normal : Appearance.rounding.capsuleFor(size)
                         colBackground: "transparent"

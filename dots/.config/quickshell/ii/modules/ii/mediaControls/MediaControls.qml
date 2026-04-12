@@ -20,7 +20,8 @@ Scope {
     readonly property var meaningfulPlayers: filterDuplicatePlayers(realPlayers)
     readonly property real osdWidth: Appearance.sizes.osdWidth
     readonly property real widgetWidth: Appearance.sizes.mediaControlsWidth
-    readonly property real widgetHeight: Appearance.sizes.mediaControlsHeight
+    readonly property bool compactMode: Config.options.bar.tooltips.compactPopups
+    readonly property real widgetHeight: compactMode ? Appearance.sizes.mediaControlsHeight : 340
     property real popupRounding: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
     property list<real> visualizerPoints: []
 
@@ -164,7 +165,26 @@ Scope {
                     model: ScriptModel {
                         values: root.meaningfulPlayers
                     }
-                    delegate: PlayerControl {
+                    delegate: root.compactMode ? playerControlCompact : playerControl
+                }
+
+                Component {
+                    id: playerControl
+
+                    PlayerControl {
+                        required property MprisPlayer modelData
+                        player: modelData
+                        visualizerPoints: root.visualizerPoints
+                        implicitWidth: root.widgetWidth
+                        implicitHeight: root.widgetHeight
+                        radius: root.popupRounding
+                    }
+                }
+
+                Component {
+                    id: playerControlCompact
+
+                    PlayerControlCompact {
                         required property MprisPlayer modelData
                         player: modelData
                         visualizerPoints: root.visualizerPoints

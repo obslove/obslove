@@ -7,13 +7,22 @@ import QtQuick
 
 Item {
     id: root
-    visible: LyricsService.syncedLines.length > 0
+    visible: displayedLines.length > 0
     clip: true
 
-    readonly property bool hasSyncedLines: LyricsService.syncedLines.length > 0
+    property bool initializeService: true
+    property bool useExternalSource: false
+    property var externalLines: []
+    property int externalCurrentIndex: -1
+    property string externalStatusText: ""
+
+    readonly property var displayedLines: useExternalSource ? (externalLines ?? []) : LyricsService.syncedLines
+    readonly property int displayedCurrentIndex: useExternalSource ? externalCurrentIndex : LyricsService.currentIndex
+    readonly property string displayedStatusText: useExternalSource ? externalStatusText : LyricsService.statusText
+    readonly property bool hasSyncedLines: displayedLines.length > 0
     readonly property real baseY: (height - rowHeight) / 2
     property int visibleLineCount: halfVisibleLines * 2 + 1
-    readonly property int targetCurrentIndex: hasSyncedLines ? LyricsService.currentIndex : -1
+    readonly property int targetCurrentIndex: hasSyncedLines ? displayedCurrentIndex : -1
 
     property int rowHeight: Math.max(30, Math.min(Math.floor(height / 5), Appearance.font.pixelSize.hugeass * 3))
     property real downScale: 0.85
@@ -32,7 +41,8 @@ Item {
     readonly property real animProgress: Math.abs(scrollOffset) / rowHeight
 
     Component.onCompleted: {
-        LyricsService.initiliazeLyrics()
+        if (initializeService)
+            LyricsService.initiliazeLyrics()
     }
 
     onTargetCurrentIndexChanged: {
@@ -75,7 +85,7 @@ Item {
                              root.textAlign === "right" ? Text.AlignRight :
                                                           Text.AlignHCenter
 
-                text: isValidLine ? LyricsService.syncedLines[actualIndex].text : (lineOffset === 0 && root.targetCurrentIndex === -1 ? (LyricsService.statusText || "♪") : "")
+                text: isValidLine ? root.displayedLines[actualIndex].text : (lineOffset === 0 && root.targetCurrentIndex === -1 ? (root.displayedStatusText || "♪") : "")
 
                 // The old line offset maps where this visual line was logically positioned in the previous state.
                 property int oldLineOffset: root.isMovingForward ? lineOffset + 1 : lineOffset - 1
