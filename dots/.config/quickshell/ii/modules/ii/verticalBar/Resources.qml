@@ -6,28 +6,36 @@ import qs.modules.ii.bar as Bar
 
 MouseArea {
     id: root
-    property bool alwaysShowAllResources: false
     implicitHeight: columnLayout.implicitHeight + 15
     implicitWidth: columnLayout.implicitWidth
     hoverEnabled: !Config.options.bar.tooltips.clickToShow
+    cursorShape: Qt.PointingHandCursor
+    property bool compactMode: Config.options.bar.tooltips.compactPopups
+    property bool popupPinned: false
+
+    acceptedButtons: Qt.MiddleButton | Qt.BackButton | Qt.ForwardButton | Qt.RightButton | Qt.LeftButton
+
+    onPressed: mouse => {
+        if (mouse.button === Qt.LeftButton) {
+            root.popupPinned = !root.popupPinned
+            mouse.accepted = true
+        }
+    }
 
     ColumnLayout {
         id: columnLayout
         spacing: 10
         anchors.centerIn: parent
 
-        Resource {
+        Loader {
+            active: ResourceUsage.gpuAvailable
+            visible: active
             Layout.alignment: Qt.AlignHCenter
-            iconName: "memory"
-            percentage: ResourceUsage.memoryUsedPercentage
-            warningThreshold: Config.options.bar.resources.memoryWarningThreshold
-        }
-
-        Resource {
-            Layout.alignment: Qt.AlignHCenter
-            iconName: "swap_horiz"
-            percentage: ResourceUsage.swapUsedPercentage
-            warningThreshold: Config.options.bar.resources.swapWarningThreshold
+            sourceComponent: Resource {
+                iconName: "memory_alt"
+                percentage: ResourceUsage.gpuUsage
+                warningThreshold: 100
+            }
         }
 
         Resource {
@@ -37,9 +45,42 @@ MouseArea {
             warningThreshold: Config.options.bar.resources.cpuWarningThreshold
         }
 
+        Resource {
+            Layout.alignment: Qt.AlignHCenter
+            iconName: "hard_drive_2"
+            percentage: ResourceUsage.diskUsedPercentage
+            warningThreshold: 100
+        }
+
+        Resource {
+            Layout.alignment: Qt.AlignHCenter
+            iconName: "memory"
+            percentage: ResourceUsage.memoryUsedPercentage
+            warningThreshold: Config.options.bar.resources.memoryWarningThreshold
+        }
+
     }
 
-    Bar.ResourcesPopup {
-        hoverTarget: root
+    Loader {
+        active: true
+        sourceComponent: root.compactMode ? resourcesPopupCompact : resourcesPopup
+    }
+
+    Component {
+        id: resourcesPopup
+
+        Bar.ResourcesPopup {
+            hoverTarget: root
+            forceActive: root.popupPinned
+        }
+    }
+
+    Component {
+        id: resourcesPopupCompact
+
+        Bar.ResourcesPopupCompact {
+            hoverTarget: root
+            forceActive: root.popupPinned
+        }
     }
 }

@@ -13,8 +13,9 @@ LazyLoader {
     property real popupBackgroundMargin: 0
     property int popupRadius: Appearance.rounding.large
     property bool animate: true
+    property bool forceActive: false
 
-    active: hoverTarget && hoverTarget.containsMouse
+    active: root.forceActive || (hoverTarget && hoverTarget.containsMouse)
 
     component: PanelWindow {
         id: popupWindow

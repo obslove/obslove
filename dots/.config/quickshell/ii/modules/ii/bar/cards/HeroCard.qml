@@ -10,7 +10,7 @@ Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: implicitHeight
     Layout.preferredWidth: implicitWidth
-    implicitWidth: adaptiveWidth ? Math.min(Math.max(220 + titleMetrics.width, 180 + subtitleMetrics.width, 380), 550) : 380  // fixed sizes to keep consistency
+    implicitWidth: adaptiveWidth ? Math.max(Math.max(220 + titleMetrics.width, 180 + subtitleMetrics.width), 380) : 380  // fixed sizes to keep consistency
     implicitHeight: compactMode ? 150 : 180
 
     radius: Appearance.rounding.normal
@@ -38,8 +38,10 @@ Rectangle {
     property color symbolColor: Appearance.colors.colOnPrimary
     property color textColor: Appearance.colors.colOnPrimaryContainer
 
+    default property alias content: extraContent.data
     property alias shapeContent: shapeItem.data
     property int spacing: 16
+    readonly property real textBlockWidth: Math.max(200, heroCardRoot.width - heroCardRoot.iconSize - heroCardRoot.margins * 3)
 
     TextMetrics {
         id: titleMetrics
@@ -75,6 +77,7 @@ Rectangle {
     }
 
     Rectangle {
+        id: pillContainer
         visible: heroCardRoot.pillText !== "" && heroCardRoot.pillIcon !== ""
         implicitHeight: cityRow.implicitHeight + 12
         implicitWidth: cityRow.implicitWidth + 20
@@ -111,37 +114,50 @@ Rectangle {
         }
     }
 
-    StyledText {
-        text: heroCardRoot.title
-        font.pixelSize: heroCardRoot.titleSize
-        font.family: Appearance.font.family.title
-        font.weight: Font.Black
-        color: heroCardRoot.textColor
-        horizontalAlignment: Text.AlignRight
+    ColumnLayout {
+        id: rightColumn
         anchors {
             verticalCenter: parent.verticalCenter
             verticalCenterOffset: 4
             right: parent.right
-            margins: heroCardRoot.margins
+            top: pillContainer.visible ? pillContainer.bottom : undefined
+            rightMargin: heroCardRoot.margins
+            topMargin: pillContainer.visible ? 8 : 0
         }
-        width: 200
-    }
+        width: heroCardRoot.textBlockWidth
+        spacing: 8
 
-    StyledText {
-        text: heroCardRoot.subtitle
-        anchors {
-            right: parent.right
-            bottom: parent.bottom
-            margins: heroCardRoot.margins
+        StyledText {
+            text: heroCardRoot.title
+            font.pixelSize: heroCardRoot.titleSize
+            font.family: Appearance.font.family.title
+            font.weight: Font.Black
+            color: heroCardRoot.textColor
+            horizontalAlignment: Text.AlignRight
+            elide: Text.ElideRight
+            Layout.alignment: Qt.AlignRight
+            Layout.fillWidth: true
         }
-        font {
-            pixelSize: heroCardRoot.subtitleSize
-            family: Appearance.font.family.title
-            weight: Font.Black
+
+        StyledText {
+            text: heroCardRoot.subtitle
+            font {
+                pixelSize: heroCardRoot.subtitleSize
+                family: Appearance.font.family.title
+                weight: Font.Black
+            }
+            color: heroCardRoot.textColor
+            horizontalAlignment: Text.AlignRight
+            elide: Text.ElideRight
+            Layout.alignment: Qt.AlignRight
+            Layout.fillWidth: true
         }
-        color: heroCardRoot.textColor
-        horizontalAlignment: Text.AlignRight
-        elide: Text.ElideRight
-        width: adaptiveWidth ? heroCardRoot.width - 160 : 200
+
+        ColumnLayout {
+            id: extraContent
+            Layout.alignment: Qt.AlignRight
+            Layout.fillWidth: true
+            spacing: 8
+        }
     }
 }

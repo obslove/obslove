@@ -8,6 +8,18 @@ MouseArea {
     implicitWidth: rowLayout.implicitWidth + rowLayout.anchors.leftMargin + rowLayout.anchors.rightMargin
     implicitHeight: Appearance.sizes.barHeight
     hoverEnabled: !Config.options.bar.tooltips.clickToShow
+    cursorShape: Qt.PointingHandCursor
+    property bool compactMode: Config.options.bar.tooltips.compactPopups
+    property bool popupPinned: false
+
+    acceptedButtons: Qt.MiddleButton | Qt.BackButton | Qt.ForwardButton | Qt.RightButton | Qt.LeftButton
+
+    onPressed: mouse => {
+        if (mouse.button === Qt.LeftButton) {
+            root.popupPinned = !root.popupPinned
+            mouse.accepted = true
+        }
+    }
 
     RowLayout {
         id: rowLayout
@@ -18,18 +30,10 @@ MouseArea {
         anchors.rightMargin: 4
 
         Resource {
-            iconName: "memory"
-            percentage: ResourceUsage.memoryUsedPercentage
-            shown: true
-            warningThreshold: Config.options.bar.resources.memoryWarningThreshold
-        }
-
-        Resource {
-            iconName: "swap_horiz"
-            percentage: ResourceUsage.swapUsedPercentage
-            shown: true
-            Layout.leftMargin: shown ? 6 : 0
-            warningThreshold: Config.options.bar.resources.swapWarningThreshold
+            iconName: "memory_alt"
+            percentage: ResourceUsage.gpuAvailable ? ResourceUsage.gpuUsage : 0
+            shown: ResourceUsage.gpuAvailable
+            warningThreshold: 100
         }
 
         Resource {
@@ -40,9 +44,44 @@ MouseArea {
             warningThreshold: Config.options.bar.resources.cpuWarningThreshold
         }
 
+        Resource {
+            iconName: "hard_drive_2"
+            percentage: ResourceUsage.diskUsedPercentage
+            shown: true
+            Layout.leftMargin: shown ? 6 : 0
+            warningThreshold: 100
+        }
+
+        Resource {
+            iconName: "memory"
+            percentage: ResourceUsage.memoryUsedPercentage
+            shown: true
+            Layout.leftMargin: shown ? 6 : 0
+            warningThreshold: Config.options.bar.resources.memoryWarningThreshold
+        }
+
     }
 
-    ResourcesPopup {
-        hoverTarget: root
+    Loader {
+        active: true
+        sourceComponent: root.compactMode ? resourcesPopupCompact : resourcesPopup
+    }
+
+    Component {
+        id: resourcesPopup
+
+        ResourcesPopup {
+            hoverTarget: root
+            forceActive: root.popupPinned
+        }
+    }
+
+    Component {
+        id: resourcesPopupCompact
+
+        ResourcesPopupCompact {
+            hoverTarget: root
+            forceActive: root.popupPinned
+        }
     }
 }
