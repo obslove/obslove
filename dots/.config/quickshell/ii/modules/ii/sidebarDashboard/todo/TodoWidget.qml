@@ -167,7 +167,7 @@ Item {
             anchors.margins: root.dialogMargins
             implicitHeight: dialogColumnLayout.implicitHeight
 
-            color: Appearance.m3colors.m3surfaceContainerHigh
+            color: Appearance.colors.colSurfaceContainerHigh
             radius: Appearance.rounding.normal
 
             ColumnLayout {

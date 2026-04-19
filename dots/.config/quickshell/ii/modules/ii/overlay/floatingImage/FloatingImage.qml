@@ -42,7 +42,7 @@ StyledOverlayWidget {
 
     contentItem: OverlayBackground {
         id: bg
-        color: ColorUtils.transparentize(Appearance.m3colors.m3surfaceContainer, root.actuallyPinned ? 1 : 0)
+        color: root.actuallyPinned ? ColorUtils.applyAlpha(Appearance.colors.colSurfaceContainer, 0) : Appearance.colors.colSurfaceContainer
         radius: root.contentRadius
 
         WheelHandler {

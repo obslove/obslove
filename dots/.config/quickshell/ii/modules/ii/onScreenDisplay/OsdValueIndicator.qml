@@ -32,7 +32,7 @@ Item {
             margins: Appearance.sizes.elevationMargin
         }
         radius: Appearance.rounding.full
-        color: Appearance.m3colors.m3surfaceContainer
+        color: Appearance.colors.colSurfaceContainer
 
         implicitWidth: valueRow.implicitWidth
         implicitHeight: valueRow.implicitHeight

@@ -23,7 +23,7 @@ AbstractBackgroundWidget {
         id: backgroundShape
         anchors.fill: parent
         shapeString: Config.options.background.widgets.weather.backgroundShape
-        color: Appearance.colors.colPrimaryContainer
+        color: Appearance.colors.colPrimaryContainerSolid
         implicitSize: 200
 
         StyledText {

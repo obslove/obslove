@@ -56,7 +56,7 @@ StyledOverlayWidget {
         id: contentItem
         radius: root.contentRadius
         property real padding: 8
-        color: ColorUtils.transparentize(Appearance.m3colors.m3surfaceContainer, 1 - Config.options.overlay.media.backgroundOpacityPercentage / 100)
+        color: ColorUtils.transparentize(Appearance.colors.colSurfaceContainer, 1 - Config.options.overlay.media.backgroundOpacityPercentage / 100)
 
         ColumnLayout {
             anchors.fill: parent

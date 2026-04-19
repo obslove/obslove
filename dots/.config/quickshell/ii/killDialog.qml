@@ -39,14 +39,13 @@ ApplicationWindow {
         Config.blockWrites = true;
         MaterialThemeLoader.reapplyTheme();
     }
-
     minimumWidth: 400
     minimumHeight: 300
     maximumWidth: 400
     maximumHeight: 300
     width: 400
     height: 300
-    color: Appearance.m3colors.m3background
+    color: Config.options.appearance.transparency.enable ? "transparent" : Appearance.colors.colLayer0Base
 
     component ConflictingProgramGroup: ColumnLayout {
         id: conflictGroup
@@ -162,7 +161,7 @@ ApplicationWindow {
         }
         Rectangle {
             // Content container
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colSurfaceContainerLow
             radius: Appearance.rounding.windowRounding - root.contentPadding
             implicitHeight: contentColumn.implicitHeight
             implicitWidth: contentColumn.implicitWidth

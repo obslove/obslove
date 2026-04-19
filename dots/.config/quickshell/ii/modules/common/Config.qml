@@ -140,6 +140,7 @@ Singleton {
                 property JsonObject transparency: JsonObject {
                     property bool enable: false
                     property bool automatic: true
+                    property bool blur: true
                     property real backgroundTransparency: 0.11
                     property real contentTransparency: 0.57
                 }

@@ -35,34 +35,34 @@ AbstractBackgroundWidget {
     property MprisPlayer currentPlayer : MprisController.activePlayer
     property var artUrl: currentPlayer?.trackArtUrl
     property string artDownloadLocation: Directories.coverArt
-    property string artFileName: Qt.md5(artUrl)
-    property string artFilePath: `${artDownloadLocation}/${artFileName}`
+    property string artFileName: artUrl ? Qt.md5(artUrl) : ""
+    property string artFilePath: artFileName.length > 0 ? `${artDownloadLocation}/${artFileName}` : ""
 
     property real widgetSize: 200
     property real controlsSize: 55
     property real buttonIconSize: 30
     property bool showSwitchButton: false
 
-    property color artDominantColor: ColorUtils.mix((colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary), Appearance.colors.colPrimaryContainer, 0.8) || Appearance.m3colors.m3secondaryContainer
+    property color artDominantColor: ColorUtils.mix((colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary), Appearance.colors.colPrimaryContainerSolid, 0.8) || Appearance.m3colors.m3secondaryContainer
     property QtObject blendedColors: AdaptedMaterialScheme {
         color: artDominantColor
     }
     property var dynamicColors: {
         return {
             colPrimary: root.useDynamicColors                  ?  blendedColors.colPrimary                  : Appearance.colors.colPrimary,
-            colPrimaryBackground: root.useDynamicColors        ?  blendedColors.colPrimaryContainer         : Appearance.colors.colPrimaryContainer,
-            colPrimaryBackgroundHover: root.useDynamicColors   ?  blendedColors.colPrimaryContainerHover    : Appearance.colors.colPrimaryContainerHover,
-            colPrimaryRipple: root.useDynamicColors            ?  blendedColors.colPrimaryContainerActive   : Appearance.colors.colPrimaryContainerActive,
+            colPrimaryBackground: root.useDynamicColors        ?  blendedColors.colPrimaryContainer         : Appearance.colors.colPrimaryContainerSolid,
+            colPrimaryBackgroundHover: root.useDynamicColors   ?  blendedColors.colPrimaryContainerHover    : Appearance.colors.colPrimaryContainerSolidHover,
+            colPrimaryRipple: root.useDynamicColors            ?  blendedColors.colPrimaryContainerActive   : Appearance.colors.colPrimaryContainerSolidActive,
 
             colSecondary: root.useDynamicColors                ?  blendedColors.colSecondary                : Appearance.colors.colSecondary,
-            colSecondaryBackground: root.useDynamicColors      ?  blendedColors.colSecondaryContainer       : Appearance.colors.colSecondaryContainer,
-            colSecondaryBackgroundHover: root.useDynamicColors ?  blendedColors.colSecondaryContainerHover  : Appearance.colors.colSecondaryContainerHover,
-            colSecondaryRipple: root.useDynamicColors          ?  blendedColors.colSecondaryContainerActive : Appearance.colors.colSecondaryContainerActive,
+            colSecondaryBackground: root.useDynamicColors      ?  blendedColors.colSecondaryContainer       : Appearance.colors.colSecondaryContainerSolid,
+            colSecondaryBackgroundHover: root.useDynamicColors ?  blendedColors.colSecondaryContainerHover  : Appearance.colors.colSecondaryContainerSolidHover,
+            colSecondaryRipple: root.useDynamicColors          ?  blendedColors.colSecondaryContainerActive : Appearance.colors.colSecondaryContainerSolidActive,
 
             colTertiary: root.useDynamicColors                 ? blendedColors.colTertiary                  : Appearance.colors.colTertiary,
-            colTertiaryBackground: root.useDynamicColors       ? blendedColors.colTertiaryContainer         : Appearance.colors.colTertiaryContainer,
-            colTertiaryBackgroundHover: root.useDynamicColors  ? blendedColors.colTertiaryContainerHover    : Appearance.colors.colTertiaryContainerHover,
-            colTertiaryRipple: root.useDynamicColors           ? blendedColors.colTertiaryContainerActive   : Appearance.colors.colTertiaryContainerActive
+            colTertiaryBackground: root.useDynamicColors       ? blendedColors.colTertiaryContainer         : Appearance.colors.colTertiaryContainerSolid,
+            colTertiaryBackgroundHover: root.useDynamicColors  ? blendedColors.colTertiaryContainerHover    : Appearance.colors.colTertiaryContainerSolidHover,
+            colTertiaryRipple: root.useDynamicColors           ? blendedColors.colTertiaryContainerActive   : Appearance.colors.colTertiaryContainerSolidActive
             
         }
     }
@@ -99,6 +99,10 @@ AbstractBackgroundWidget {
     }
 
     function updateArt() {
+        if (!root.artUrl || root.artFilePath.length === 0) {
+            root.downloaded = false
+            return
+        }
         coverArtDownloader.targetFile = root.artUrl 
         coverArtDownloader.artFilePath = root.artFilePath
         root.downloaded = false
@@ -107,11 +111,11 @@ AbstractBackgroundWidget {
 
     Process { // Cover art downloader
         id: coverArtDownloader
-        property string targetFile: root.artUrl
+        property string targetFile: root.artUrl ?? ""
         property string artFilePath: root.artFilePath
-        command: [ "bash", "-c", `[ -f ${artFilePath} ] || curl -sSL '${targetFile}' -o '${artFilePath}'` ]
+        command: [ "bash", "-c", targetFile.length > 0 && artFilePath.length > 0 ? `[ -f '${artFilePath}' ] || curl -sSL '${targetFile}' -o '${artFilePath}'` : "true" ]
         onExited: (exitCode, exitStatus) => {
-            root.downloaded = true
+            root.downloaded = targetFile.length > 0 && exitCode === 0
         }
     }
 
@@ -151,7 +155,7 @@ AbstractBackgroundWidget {
             anchors.fill: parent
             source: root.displayedArtFilePath
             sourceSize.width: contentItem.implicitWidth
-            sourceSize.height: sourceSize.width
+            sourceSize.height: contentItem.implicitHeight
             fillMode: Image.PreserveAspectCrop
             cache: false
             antialiasing: true
@@ -201,14 +205,14 @@ AbstractBackgroundWidget {
                 iconSize: root.widgetSize / 4
                 shape: MaterialShape.Shape.Cookie12Sided
                 color: blendedColors.colOnSecondaryContainer
-                colSymbol: Appearance.colors.colPrimaryContainer
+                colSymbol: Appearance.colors.colPrimaryContainerSolid
             }
         }
         
         MaterialShape { // Art background
             id: artBackground
             anchors.fill: parent
-            color: Appearance.colors.colPrimaryContainer
+            color: Appearance.colors.colPrimaryContainerSolid
             shapeString: Config.options.background.widgets.media.backgroundShape
             
             layer.enabled: true

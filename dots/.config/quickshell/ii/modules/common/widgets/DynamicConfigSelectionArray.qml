@@ -121,7 +121,7 @@ Item {
     Rectangle {
         id: loadingOverlay
         anchors.fill: parent
-        color: Appearance.m3colors.m3surfaceContainerLow
+        color: Appearance.colors.colSurfaceContainerLow
         opacity: root.loading ? 1 : 0
         visible: loadingOverlay.opacity > 0
         z: 10

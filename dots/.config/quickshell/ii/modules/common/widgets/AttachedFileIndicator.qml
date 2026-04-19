@@ -108,7 +108,7 @@ Rectangle {
                 visible: root.canRemove
                 Layout.alignment: Qt.AlignTop
                 buttonRadius: Appearance.rounding.full
-                colBackground: highlight ? Appearance.m3colors.m3background : Appearance.colors.colLayer2
+                colBackground: highlight ? Appearance.colors.colLayer0 : Appearance.colors.colLayer2
                 implicitHeight: 28
                 implicitWidth: 28
                 contentItem: MaterialSymbol {

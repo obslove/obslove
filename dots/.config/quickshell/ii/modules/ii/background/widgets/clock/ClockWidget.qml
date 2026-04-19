@@ -93,7 +93,7 @@ AbstractBackgroundWidget {
             implicitHeight: statusTextRow.implicitHeight + 5 * 2
             implicitWidth: statusTextRow.implicitWidth + 5 * 2
             radius: Appearance.rounding.small
-            color: ColorUtils.transparentize(Appearance.colors.colSecondaryContainer, root.clockStyle === "cookie" ? 0 : 1)
+            color: ColorUtils.transparentize(Appearance.colors.colSecondaryContainerSolid, root.clockStyle === "cookie" ? 0 : 1)
 
             Behavior on implicitWidth {
                 animation: Appearance.animation.elementResize.numberAnimation.createObject(this)

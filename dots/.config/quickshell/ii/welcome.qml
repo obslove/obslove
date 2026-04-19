@@ -39,7 +39,7 @@ ApplicationWindow {
     minimumHeight: 400
     width: 900
     height: 650
-    color: Appearance.m3colors.m3background
+    color: Config.options.appearance.transparency.enable ? "transparent" : Appearance.colors.colLayer0Base
 
     Process {
         id: konachanWallProc
@@ -128,7 +128,7 @@ ApplicationWindow {
 
         Rectangle {
             // Content container
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colSurfaceContainerLow
             radius: Appearance.rounding.windowRounding - root.contentPadding
             implicitHeight: contentColumn.implicitHeight
             implicitWidth: contentColumn.implicitWidth

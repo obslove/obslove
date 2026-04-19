@@ -12,7 +12,7 @@ Item {
     property real markLength: 12
     property real markWidth: 4
     property color color: Appearance.colors.colOnSecondaryContainer
-    property color colOnBackground: Appearance.colors.colSecondaryContainer
+    property color colOnBackground: Appearance.colors.colSecondaryContainerSolid
     property real padding: 8
 
     Rectangle {

@@ -17,7 +17,7 @@ Rectangle {
     opacity: GlobalStates.overlayOpen ? 1 : 0
     implicitWidth: contentRow.implicitWidth + (padding * 2)
     implicitHeight: contentRow.implicitHeight + (padding * 2)
-    color: Appearance.m3colors.m3surfaceContainer
+    color: Appearance.colors.colSurfaceContainer
     radius: Appearance.rounding.large
     border.color: Appearance.borders.shellSurfaceColor
     border.width: Appearance.borders.shellSurfaceWidth

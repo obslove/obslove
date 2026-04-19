@@ -19,7 +19,7 @@ Item {
         // sides: root.isMonth ? 1 : 4
         shape: root.isMonth ? MaterialShape.Shape.Pill : MaterialShape.Shape.Pentagon
         anchors.centerIn: parent
-        color: root.isMonth ? Appearance.colors.colSecondaryContainer : Appearance.colors.colTertiaryContainer
+        color: root.isMonth ? Appearance.colors.colSecondaryContainerSolid : Appearance.colors.colTertiaryContainerSolid
         implicitSize: targetSize
     }
 

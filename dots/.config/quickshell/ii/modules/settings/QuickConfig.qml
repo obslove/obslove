@@ -244,6 +244,67 @@ ContentPage {
             checked: Config.options.appearance.transparency.enable
             onCheckedChanged: {
                 Config.options.appearance.transparency.enable = checked;
+                HyprlandSettings.syncAppearanceConfig();
+            }
+        }
+
+        ColumnLayout {
+            visible: Config.options.appearance.transparency.enable
+            Layout.fillWidth: true
+
+            ConfigSwitch {
+                Layout.fillWidth: true
+                buttonIcon: "auto_awesome"
+                text: Translation.tr("Automatic transparency")
+                checked: Config.options.appearance.transparency.automatic
+                onCheckedChanged: {
+                    Config.options.appearance.transparency.automatic = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Automatic mode derives transparency from the current wallpaper. Disable it to use the manual values below.")
+                }
+            }
+
+            ConfigSwitch {
+                Layout.fillWidth: true
+                buttonIcon: "blur_on"
+                text: Translation.tr("Enable blur")
+                checked: Config.options.appearance.transparency.blur
+                onCheckedChanged: {
+                    Config.options.appearance.transparency.blur = checked;
+                    HyprlandSettings.syncAppearanceConfig();
+                }
+            }
+        }
+
+        ColumnLayout {
+            visible: Config.options.appearance.transparency.enable && !Config.options.appearance.transparency.automatic
+            Layout.fillWidth: true
+
+            ConfigSpinBox {
+                Layout.fillWidth: true
+                icon: "layers"
+                text: Translation.tr("Background transparency (%)")
+                value: Math.round(Config.options.appearance.transparency.backgroundTransparency * 100)
+                from: 0
+                to: 100
+                stepSize: 1
+                onValueChanged: {
+                    Config.options.appearance.transparency.backgroundTransparency = value / 100;
+                }
+            }
+
+            ConfigSpinBox {
+                Layout.fillWidth: true
+                icon: "opacity"
+                text: Translation.tr("Content transparency (%)")
+                value: Math.round(Config.options.appearance.transparency.contentTransparency * 100)
+                from: 0
+                to: 100
+                stepSize: 1
+                onValueChanged: {
+                    Config.options.appearance.transparency.contentTransparency = value / 100;
+                }
             }
         }
         
@@ -299,7 +360,7 @@ ContentPage {
                 ConfigSelectionArray {
                     currentValue: Config.options.bar.cornerStyle
                     onSelected: newValue => {
-                        Config.options.bar.cornerStyle = newValue; // Update local copy
+                        Config.options.bar.cornerStyle = newValue;
                     }
                     options: [
                         {
@@ -368,7 +429,7 @@ ContentPage {
                         if (Config.options.appearance.toggleWindowRounding)
                             HyprlandSettings.setRounding(Appearance.rounding.windowRoundingFor(newValue));
                     }
-                    options: [ 
+                    options: [
                         {
                             displayName: Translation.tr("Default"),
                             icon: "rounded_corner",
@@ -378,7 +439,7 @@ ContentPage {
                             displayName: Translation.tr("Soft"),
                             icon: "rounded_corner",
                             value: Appearance.rounding.styleSoft
-                        }, 
+                        },
                         {
                             displayName: Translation.tr("Sharp"),
                             icon: "square",
@@ -386,7 +447,7 @@ ContentPage {
                         }
                     ]
                 }
-            } 
+            }
         }
 
         ConfigSpinBox {

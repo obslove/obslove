@@ -90,9 +90,9 @@ Button {
             implicitWidth: buttonSize
 
             buttonRadius: Appearance.rounding.full
-            colBackground: ColorUtils.transparentize(Appearance.m3colors.m3surface, 0.3)
-            colBackgroundHover: ColorUtils.transparentize(ColorUtils.mix(Appearance.m3colors.m3surface, Appearance.m3colors.m3onSurface, 0.8), 0.2)
-            colRipple: ColorUtils.transparentize(ColorUtils.mix(Appearance.m3colors.m3surface, Appearance.m3colors.m3onSurface, 0.6), 0.1)
+            colBackground: Appearance.colors.colSurfaceContainer
+            colBackgroundHover: Appearance.colors.colSurfaceContainerHigh
+            colRipple: Appearance.colors.colSurfaceContainerHighest
 
             contentItem: MaterialSymbol {
                 horizontalAlignment: Text.AlignHCenter
@@ -126,7 +126,7 @@ Button {
                     opacity: root.showActions ? 1 : 0
                     visible: opacity > 0
                     radius: Appearance.rounding.small
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: Appearance.colors.colSurfaceContainer
                     implicitHeight: contextMenuColumnLayout.implicitHeight + radius * 2
                     implicitWidth: contextMenuColumnLayout.implicitWidth
 

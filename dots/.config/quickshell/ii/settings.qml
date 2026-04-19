@@ -87,7 +87,7 @@ ApplicationWindow {
     minimumHeight: 500
     width: 1100
     height: 750
-    color: Appearance.m3colors.m3background
+    color: Config.options.appearance.transparency.enable ? "transparent" : Appearance.colors.colLayer0Base
 
     ColumnLayout {
         anchors {
@@ -352,7 +352,7 @@ ApplicationWindow {
             Rectangle { // Content container
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: Appearance.m3colors.m3surfaceContainerLow
+                color: Appearance.colors.colSurfaceContainerLow
                 radius: Appearance.rounding.windowRounding - root.contentPadding
 
                 Loader {

@@ -18,13 +18,13 @@ import Quickshell.Hyprland
 
 ShellRoot {
     id: root
-
-    
+    readonly property var hyprlandSettings: HyprlandSettings
 
     // Stuff for every panel family
     ReloadPopup {}
 
     Component.onCompleted: {
+        HyprlandSettings.syncAppearanceConfig()
         MaterialThemeLoader.reapplyTheme()
         Hyprsunset.load()
         FirstRunExperience.load()
@@ -76,4 +76,3 @@ ShellRoot {
         onPressed: root.cyclePanelFamily()
     }
 }
-

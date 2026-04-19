@@ -13,7 +13,7 @@ TextField {
     Material.theme: Material.System
     Material.accent: Appearance.m3colors.m3primary
     Material.primary: Appearance.m3colors.m3primary
-    Material.background: Appearance.m3colors.m3surface
+    Material.background: Appearance.colors.colSurfaceContainerLow
     Material.foreground: Appearance.m3colors.m3onSurface
     Material.containerStyle: Material.Outlined
     renderType: Text.QtRendering

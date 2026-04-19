@@ -619,7 +619,7 @@ MouseArea {
 
                     ColorFilterToolbar {
                         id: colorFilterToolbar
-                        colBackground: Appearance.m3colors.m3surfaceContainerLow
+                        colBackground: Appearance.colors.colSurfaceContainerLow
                         anchors {
                             bottom: parent.bottom
                             left: parent.left
@@ -630,7 +630,7 @@ MouseArea {
 
                     ExtraOptionsToolbar {
                         id: extraOptions
-                        colBackground: Appearance.m3colors.m3surfaceContainerLow
+                        colBackground: Appearance.colors.colSurfaceContainerLow
                         anchors {
                             bottom: parent.bottom
                             horizontalCenter: parent.horizontalCenter
