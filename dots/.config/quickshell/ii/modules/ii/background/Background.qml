@@ -184,7 +184,7 @@ Variants {
             TransitionImage {
                 id: wallpaper
                 visible: opacity > 0 && !blurLoader.active && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperIsGif
-                opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperIsGif) ? 1 : 0
+                opacity: (wallpaper.imageSource !== "" && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperIsGif) ? 1 : 0
                 cache: false
                 smooth: false
                 // Range = groups that workspaces span on

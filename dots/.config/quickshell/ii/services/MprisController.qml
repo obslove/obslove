@@ -19,7 +19,7 @@ Singleton {
 	property list<MprisPlayer> allPlayers: Mpris.players.values;
 	property list<MprisPlayer> players: Mpris.players.values.filter(player => isRealPlayer(player));
 	property MprisPlayer trackedPlayer: null;
-	property MprisPlayer activePlayer: trackedPlayer ?? Mpris.players.values[0] ?? null;
+	property MprisPlayer activePlayer: trackedPlayer ?? (Mpris.players.values.length > 0 ? Mpris.players.values[0] : null);
 	signal trackChanged(reverse: bool);
 
 	property string priorityPlayer: Config.options.media.priorityPlayer;
@@ -34,7 +34,7 @@ Singleton {
 			activePlayer = nextPlayer;
 			return;
 		} else {
-			activePlayer = players[0];
+			activePlayer = players.length > 0 ? players[0] : null;
 		}
 	}
 

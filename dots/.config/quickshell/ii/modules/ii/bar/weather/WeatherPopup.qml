@@ -123,11 +123,11 @@ StyledPopup {
         HeroCard {
             id: weatherHero
             Layout.minimumWidth: 320
-            icon: Icons.getWeatherIcon(Weather.data.wCode)
+            icon: Icons.getWeatherIcon(Weather.data.wCode) ?? "device_thermostat"
             pillText: Weather.data.city || "--"
             pillIcon: Weather.data.city ? "location_on" : ""
-            title: Weather.data.temp
-            subtitle: Weather.data.wDesc
+            title: Weather.data.temp ?? "--"
+            subtitle: Weather.data.wDesc ?? "--"
         }
         
         HourlyForecast {

@@ -146,8 +146,11 @@ Item { // Bar content region
         }
     }
 
-    Row { // Middle section
+    Item { // Middle section
         id: middleSection
+        implicitWidth: middleLeftSection.implicitWidth + centerCenter.implicitWidth + middleRightSection.implicitWidth + 8
+        implicitHeight: parent.height
+        width: implicitWidth
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -155,6 +158,7 @@ Item { // Bar content region
         }
 
         RowLayout {
+            id: middleLeftSection
             anchors {
                 top: parent.top
                 bottom: parent.bottom
@@ -190,6 +194,7 @@ Item { // Bar content region
         }
 
         RowLayout {
+            id: middleRightSection
             anchors {
                 top: parent.top
                 bottom: parent.bottom
