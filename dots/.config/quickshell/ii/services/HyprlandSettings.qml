@@ -9,126 +9,49 @@ import qs
 Singleton {
     id: root
 
-    readonly property string hyprlandConfigPath: Directories.home.replace("file://", "") + "/.local/share/ii-vynx/hyprland.conf"
     readonly property string hyprlandRulesPath: Directories.config.replace("file://", "") + "/hypr/hyprland/rules.conf"
     readonly property string vynxCliPath: Directories.cliPath
+    readonly property string managedSettingsTitleRegex: "title:^(illogical-impulse Settings|illogical-impulse Welcome|Shell conflicts killer)$"
+    readonly property string managedNoBlurRule: "windowrule = match:title ^(illogical-impulse Settings|illogical-impulse Welcome|Shell conflicts killer)$, no_blur on"
     property string desiredBlurState: "on"
-    readonly property string blurRewriteScript: [
-        "from pathlib import Path",
-        "import subprocess",
-        "import sys",
-        "",
-        "config_path = Path(sys.argv[1])",
-        "blur_state = sys.argv[2]",
-        "enabled = blur_state == 'on'",
-        "",
-        "if not config_path.exists():",
-        "    raise SystemExit(0)",
-        "",
-        "original_text = config_path.read_text()",
-        "lines = original_text.splitlines()",
-        "",
-        "settings_rule = 'windowrule = match:title ^(illogical-impulse Settings|illogical-impulse Welcome|Shell conflicts killer)$, no_blur on'",
-        "managed_settings_rule = f'# {settings_rule}' if enabled else settings_rule",
-        "",
-        "replacements = {",
-        "    'layerrule = match:namespace quickshell:.*, blur_popups ': f'layerrule = match:namespace quickshell:.*, blur_popups {blur_state}',",
-        "    'layerrule = match:namespace quickshell:.*, blur ': f'layerrule = match:namespace quickshell:.*, blur {blur_state}',",
-        "    'layerrule = match:namespace quickshell:.*, ignore_alpha ': 'layerrule = match:namespace quickshell:.*, ignore_alpha 0',",
-        "    'layerrule = match:namespace quickshell:overlay, ignore_alpha ': 'layerrule = match:namespace quickshell:overlay, ignore_alpha 0',",
-        "    'layerrule = match:namespace quickshell:popup, ignore_alpha ': 'layerrule = match:namespace quickshell:popup, ignore_alpha 0',",
-        "    'layerrule = match:namespace quickshell:mediaControls, ignore_alpha ': 'layerrule = match:namespace quickshell:mediaControls, ignore_alpha 0',",
-        "    'layerrule = match:namespace quickshell:session, blur ': f'layerrule = match:namespace quickshell:session, blur {blur_state}',",
-        "}",
-        "",
-        "new_lines = []",
-        "seen = {prefix: False for prefix in replacements}",
-        "settings_inserted = False",
-        "",
-        "for line in lines:",
-        "    if settings_rule in line:",
-        "        continue",
-        "",
-        "    replaced = False",
-        "    for prefix, replacement in replacements.items():",
-        "        if line.startswith(prefix):",
-        "            new_lines.append(replacement)",
-        "            seen[prefix] = True",
-        "            replaced = True",
-        "            break",
-        "",
-        "    if replaced:",
-        "        continue",
-        "",
-        "    new_lines.append(line)",
-        "",
-        "    if line == 'windowrule = match:title .*Shell conflicts.*, float on':",
-        "        new_lines.append(managed_settings_rule)",
-        "        settings_inserted = True",
-        "",
-        "if not settings_inserted:",
-        "    new_lines.append(managed_settings_rule)",
-        "",
-        "for prefix, replacement in replacements.items():",
-        "    if not seen[prefix]:",
-        "        new_lines.append(replacement)",
-        "",
-        "new_text = '\\n'.join(new_lines)",
-        "if original_text.endswith('\\n') or new_text:",
-        "    new_text += '\\n'",
-        "",
-        "if new_text != original_text:",
-        "    config_path.write_text(new_text)",
-        "    subprocess.run(['hyprctl', 'reload'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)",
-    ].join("\n")
+    property bool pendingRulesSync: false
 
     Timer {
         id: startupAppearanceSyncTimer
         interval: 250
         repeat: true
-        running: true
+        running: false
         onTriggered: {
             if (!Config.ready) return
             root.syncAppearanceConfig()
             stop()
         }
     }
-    
-    Process {
-        id: configWriter
-        
-        running: false
-        property string pendingCommand: ""
-        command: ["bash", "-c", pendingCommand]
 
-        onExited: (exitCode, exitStatus) => {
-            // NOTE: This will not work bc we are running it detached
-            if (exitCode === 1) {
-                Quickshell.execDetached(["notify-send", Translation.tr("Couldn't change the setting"), Translation.tr("Make sure you have vynx-cli installed"), "-a", "Shell"])
-            }
+    FileView {
+        id: rulesFileView
+        path: root.hyprlandRulesPath
+        watchChanges: false
+
+        onLoaded: {
+            if (!root.pendingRulesSync)
+                return
+
+            root.pendingRulesSync = false
+
+            const originalText = rulesFileView.text()
+            const nextText = root.rewriteRulesText(originalText, root.desiredBlurState)
+
+            if (nextText === originalText)
+                return
+
+            rulesFileView.setText(nextText)
+            Quickshell.execDetached(["hyprctl", "reload"])
         }
-    }
 
-    Process {
-        id: blurWriter
-
-        running: false
-        property string activeBlurState: root.desiredBlurState
-        command: ["python3", "-c", root.blurRewriteScript, root.hyprlandRulesPath, activeBlurState]
-        stderr: SplitParser {
-            onRead: data => {
-                console.warn("[HyprlandSettings] Blur writer stderr:", data.trim())
-            }
-        }
-        onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0) {
-                console.warn("[HyprlandSettings] Blur writer failed:", exitCode, exitStatus)
-            }
-
-            if (activeBlurState !== root.desiredBlurState) {
-                activeBlurState = root.desiredBlurState
-                running = true
-            }
+        onLoadFailed: error => {
+            root.pendingRulesSync = false
+            console.warn("[HyprlandSettings] Failed to load blur rules:", error)
         }
     }
 
@@ -136,11 +59,87 @@ Singleton {
         Quickshell.execDetached(["hyprctl", "keyword", key, String(value)])
     }
 
-    function changeKey(key, value) {
-        if (configWriter.running) {
-            console.warn("[HyprlandConfig] Writer busy, skipping")
+    function rewriteRulesText(originalText, blurState) {
+        const sourceText = originalText || ""
+        const enabled = blurState === "on"
+        const managedSettingsRule = enabled ? `# ${root.managedNoBlurRule}` : root.managedNoBlurRule
+        const replacementEntries = [
+            ["layerrule = match:namespace quickshell:.*, blur_popups ", `layerrule = match:namespace quickshell:.*, blur_popups ${blurState}`],
+            ["layerrule = match:namespace quickshell:.*, blur ", `layerrule = match:namespace quickshell:.*, blur ${blurState}`],
+            ["layerrule = match:namespace quickshell:.*, ignore_alpha ", "layerrule = match:namespace quickshell:.*, ignore_alpha 0"],
+            ["layerrule = match:namespace quickshell:overlay, ignore_alpha ", "layerrule = match:namespace quickshell:overlay, ignore_alpha 0"],
+            ["layerrule = match:namespace quickshell:popup, ignore_alpha ", "layerrule = match:namespace quickshell:popup, ignore_alpha 0"],
+            ["layerrule = match:namespace quickshell:mediaControls, ignore_alpha ", "layerrule = match:namespace quickshell:mediaControls, ignore_alpha 0"],
+            ["layerrule = match:namespace quickshell:session, blur ", `layerrule = match:namespace quickshell:session, blur ${blurState}`],
+        ]
+
+        const lines = sourceText.length > 0 ? sourceText.split("\n") : []
+        const seen = ({})
+        const newLines = []
+        let settingsInserted = false
+
+        for (let i = 0; i < replacementEntries.length; ++i)
+            seen[replacementEntries[i][0]] = false
+
+        for (const line of lines) {
+            if (line.includes(root.managedNoBlurRule))
+                continue
+
+            let replaced = false
+            for (const [prefix, replacement] of replacementEntries) {
+                if (!line.startsWith(prefix))
+                    continue
+
+                newLines.push(replacement)
+                seen[prefix] = true
+                replaced = true
+                break
+            }
+
+            if (replaced)
+                continue
+
+            newLines.push(line)
+
+            if (line === "windowrule = match:title .*Shell conflicts.*, float on") {
+                newLines.push(managedSettingsRule)
+                settingsInserted = true
+            }
         }
 
+        if (!settingsInserted)
+            newLines.push(managedSettingsRule)
+
+        for (const [prefix, replacement] of replacementEntries) {
+            if (!seen[prefix])
+                newLines.push(replacement)
+        }
+
+        let nextText = newLines.join("\n")
+        if (sourceText.endsWith("\n") || nextText.length > 0)
+            nextText += "\n"
+
+        return nextText
+    }
+
+    function syncManagedWindowBlur(enabled) {
+        Quickshell.execDetached([
+            "hyprctl",
+            "setprop",
+            root.managedSettingsTitleRegex,
+            "noblur",
+            enabled ? "unset" : "1"
+        ])
+    }
+
+    function runPersistCommand(command) {
+        if (!command || command.length === 0)
+            return;
+
+        Quickshell.execDetached(["bash", "-c", command])
+    }
+
+    function changeKey(key, value) {
         if (/['"\\`$|&;]/.test(String(value)) || /['"\\`$|&;]/.test(String(key))) {
             console.error("[HyprlandConfig] Unsafe characters rejected:", key, value)
             return
@@ -157,19 +156,10 @@ Singleton {
             return
         }
 
-        if (configWriter.running || sedCmd.length === 0)
-            return
-
-        configWriter.pendingCommand = sedCmd
-        configWriter.startDetached()
+        runPersistCommand(sedCmd)
     }
 
     function changeAnimation(animName, style) {
-        if (configWriter.running) {
-            console.warn("[HyprlandConfig] Writer busy, skipping")
-            return
-        }
-
         const safeCheck = /['"\\`$|&;]/
         if (safeCheck.test(String(animName)) || safeCheck.test(String(style))) {
             console.error("[HyprlandConfig] Unsafe characters rejected:", animName, style)
@@ -178,8 +168,7 @@ Singleton {
 
         const sedCmd = `[ -x '${root.vynxCliPath}' ] && '${root.vynxCliPath}' hyprset anim '${animName}' '${style}' >/dev/null 2>&1 || true`
 
-        configWriter.pendingCommand = sedCmd
-        configWriter.startDetached()
+        runPersistCommand(sedCmd)
     }
 
     function setLayout(layout) {
@@ -195,12 +184,9 @@ Singleton {
 
     function setBlurEnabled(enabled) {
         root.desiredBlurState = enabled ? "on" : "off"
-
-        if (blurWriter.running)
-            return
-
-        blurWriter.activeBlurState = root.desiredBlurState
-        blurWriter.running = true
+        root.syncManagedWindowBlur(enabled)
+        root.pendingRulesSync = true
+        rulesFileView.reload()
     }
 
     function syncAppearanceConfig() {

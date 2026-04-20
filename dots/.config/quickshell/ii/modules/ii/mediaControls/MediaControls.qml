@@ -25,7 +25,16 @@ Scope {
     property real popupRounding: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
     property list<real> visualizerPoints: []
 
+    function haveClosePlaybackState(player1, player2) {
+        return Math.abs((player1?.position ?? 0) - (player2?.position ?? 0)) <= 2
+            && Math.abs((player1?.length ?? 0) - (player2?.length ?? 0)) <= 2;
+    }
+
     function filterDuplicatePlayers(players) {
+        if (!Config.options.media.filterDuplicatePlayers) {
+            return players;
+        }
+
         let filtered = [];
         let used = new Set();
 
@@ -38,7 +47,9 @@ Scope {
             // Find duplicates by trackTitle prefix
             for (let j = i + 1; j < players.length; ++j) {
                 let p2 = players[j];
-                if (p1.trackTitle && p2.trackTitle && (p1.trackTitle.includes(p2.trackTitle) || p2.trackTitle.includes(p1.trackTitle)) || (p1.position - p2.position <= 2 && p1.length - p2.length <= 2)) {
+                const hasSimilarTitle = p1.trackTitle && p2.trackTitle
+                    && (p1.trackTitle.includes(p2.trackTitle) || p2.trackTitle.includes(p1.trackTitle));
+                if (hasSimilarTitle || haveClosePlaybackState(p1, p2)) {
                     group.push(j);
                 }
             }
@@ -246,17 +257,17 @@ Scope {
         target: "mediaControls"
 
         function toggle(): void {
-            mediaControlsLoader.active = !mediaControlsLoader.active;
-            if (mediaControlsLoader.active)
+            GlobalStates.mediaControlsOpen = !GlobalStates.mediaControlsOpen;
+            if (GlobalStates.mediaControlsOpen)
                 Notifications.timeoutAll();
         }
 
         function close(): void {
-            mediaControlsLoader.active = false;
+            GlobalStates.mediaControlsOpen = false;
         }
 
         function open(): void {
-            mediaControlsLoader.active = true;
+            GlobalStates.mediaControlsOpen = true;
             Notifications.timeoutAll();
         }
     }

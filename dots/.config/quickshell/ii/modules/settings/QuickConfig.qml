@@ -242,10 +242,7 @@ ContentPage {
             buttonIcon: "ev_shadow"
             text: Translation.tr("Transparency")
             checked: Config.options.appearance.transparency.enable
-            onCheckedChanged: {
-                Config.options.appearance.transparency.enable = checked;
-                HyprlandSettings.syncAppearanceConfig();
-            }
+            onCheckedChanged: Config.options.appearance.transparency.enable = checked
         }
 
         ColumnLayout {
@@ -270,10 +267,7 @@ ContentPage {
                 buttonIcon: "blur_on"
                 text: Translation.tr("Enable blur")
                 checked: Config.options.appearance.transparency.blur
-                onCheckedChanged: {
-                    Config.options.appearance.transparency.blur = checked;
-                    HyprlandSettings.syncAppearanceConfig();
-                }
+                onCheckedChanged: Config.options.appearance.transparency.blur = checked
             }
         }
 
