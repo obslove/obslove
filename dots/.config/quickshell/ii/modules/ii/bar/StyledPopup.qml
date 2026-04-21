@@ -129,7 +129,6 @@ LazyLoader {
             return null;
         }
         readonly property real heroHeight: heroItem ? heroItem.implicitHeight : 0
-        readonly property real totalContentHeight: root.contentItem ? root.contentItem.implicitHeight : 0
 
         NumberAnimation on animProgress {
             id: openAnim
@@ -151,6 +150,19 @@ LazyLoader {
             property bool isVertical: Config.options.bar.vertical
             property bool isBottom: Config.options.bar.bottom
             property int elevation: Appearance.sizes.elevationMargin
+            readonly property real collapsedHeight: {
+                if (!root.contentItem)
+                    return targetHeight;
+
+                const heroCollapsedHeight = heroHeight + margin * 2;
+
+                if (heroItem && targetHeight > heroCollapsedHeight)
+                    return heroCollapsedHeight;
+
+                // Single-card popups need a synthetic collapsed state, otherwise they skip
+                // the vertical reveal and only fade/scale their contents.
+                return Math.max(margin * 2 + 72, targetHeight * 0.58);
+            }
             
             anchors {
                 top: (!isVertical && !isBottom) ? parent.top : undefined
@@ -169,8 +181,10 @@ LazyLoader {
             
             width: targetWidth
             height: {
-                if (!root.animate || !root.contentItem || !heroItem || targetHeight <= heroHeight + margin * 2) return targetHeight;
-                return (heroHeight + margin * 2) + (targetHeight - (heroHeight + margin * 2)) * popupWindow.animProgress;
+                if (!root.animate || !root.contentItem)
+                    return targetHeight;
+
+                return collapsedHeight + (targetHeight - collapsedHeight) * popupWindow.animProgress;
             }
 
             color: Appearance.colors.colSurfaceContainer

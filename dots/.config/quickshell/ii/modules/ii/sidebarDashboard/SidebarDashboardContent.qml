@@ -23,6 +23,7 @@ Item {
     property int sidebarWidth: Appearance.sizes.sidebarWidth
     property int sidebarPadding: 10
     property string settingsQmlPath: Quickshell.shellPath("settings.qml")
+    property real animProgress: 0.0
     property bool showAudioOutputDialog: false
     property bool showAudioInputDialog: false
     property bool showBluetoothDialog: false
@@ -38,8 +39,41 @@ Item {
                 root.showBluetoothDialog = false;
                 root.showAudioOutputDialog = false;
                 root.showAudioInputDialog = false;
+            } else {
+                root.animProgress = 0;
+                root.applyEntranceAnimation();
+                sidebarOpenAnim.restart();
             }
         }
+    }
+
+    function applyEntranceAnimation() {
+        for (let i = 0; i < mainColumn.children.length; i++) {
+            let child = mainColumn.children[i];
+            if (!child || !child.visible)
+                continue;
+
+            child.opacity = Qt.binding(() => {
+                let normalizedDelay = child.y / Math.max(1, mainColumn.height);
+                let progress = (root.animProgress - normalizedDelay) / Math.max(0.001, 1.0 - normalizedDelay);
+                return Math.max(0, Math.min(1.0, progress));
+            });
+
+            child.scale = Qt.binding(() => {
+                let normalizedDelay = child.y / Math.max(1, mainColumn.height);
+                let progress = (root.animProgress - normalizedDelay) / Math.max(0.001, 1.0 - normalizedDelay);
+                return 0.85 + (0.15 * Math.max(0, Math.min(1.0, progress)));
+            });
+        }
+    }
+
+    NumberAnimation on animProgress {
+        id: sidebarOpenAnim
+        from: 0
+        to: 1
+        duration: Appearance.animation.elementMove.duration
+        easing.type: Appearance.animation.elementMove.type
+        easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
     }
 
     implicitHeight: sidebarRightBackground.implicitHeight
@@ -60,9 +94,20 @@ Item {
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
 
         ColumnLayout {
+            id: mainColumn
             anchors.fill: parent
             anchors.margins: sidebarPadding
             spacing: sidebarPadding
+
+            Component.onCompleted: {
+                root.applyEntranceAnimation()
+                if (GlobalStates.sidebarRightOpen) {
+                    root.animProgress = 0;
+                    sidebarOpenAnim.restart()
+                }
+            }
+
+            onChildrenChanged: root.applyEntranceAnimation()
 
             SystemButtonRow {
                 Layout.fillHeight: false

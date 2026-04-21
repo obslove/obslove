@@ -50,17 +50,20 @@ MouseArea {
 
     StyledPopup {
         hoverTarget: indicator
-        animate: false
-        contentItem: HeroCard {
-            compactMode: true
-            anchors.centerIn: parent
-            icon: "cast_connected"
+        contentItem: ColumnLayout {
+            spacing: 0
 
-            title: stateFile.text().trim()
-            subtitle: Translation.tr("is using your screen")
+            HeroCard {
+                Layout.alignment: Qt.AlignHCenter
+                compactMode: true
+                icon: "cast_connected"
 
-            pillText: Translation.tr("Sharing..")
-            pillIcon: "screen_share"
+                title: stateFile.text().trim()
+                subtitle: Translation.tr("is using your screen")
+
+                pillText: Translation.tr("Sharing..")
+                pillIcon: "screen_share"
+            }
         }
     }
 }

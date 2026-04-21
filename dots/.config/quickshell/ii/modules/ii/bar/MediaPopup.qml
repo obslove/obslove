@@ -15,17 +15,20 @@ StyledPopup {
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
 
-    animate: false // We have to disable the animation if we have only one card
-    contentItem: HeroCard {
-        id: mediaHero
-        compactMode: true
-        anchors.centerIn: parent
-        icon: "music_note"
+    contentItem: ColumnLayout {
+        spacing: 0
 
-        title: activePlayer?.trackArtist || Translation.tr("Unknown Artist")
-        subtitle: activePlayer ? activePlayer.trackTitle : Translation.tr("No media")
+        HeroCard {
+            id: mediaHero
+            Layout.alignment: Qt.AlignHCenter
+            compactMode: true
+            icon: "music_note"
 
-        pillText: activePlayer ? (activePlayer.playbackState == MprisPlaybackState.Playing ? Translation.tr("Playing") : Translation.tr("Paused")) : ""
-        pillIcon: activePlayer ? (activePlayer.playbackState == MprisPlaybackState.Playing ? "play_arrow" : "pause") : ""
+            title: activePlayer?.trackArtist || Translation.tr("Unknown Artist")
+            subtitle: activePlayer ? activePlayer.trackTitle : Translation.tr("No media")
+
+            pillText: activePlayer ? (activePlayer.playbackState == MprisPlaybackState.Playing ? Translation.tr("Playing") : Translation.tr("Paused")) : ""
+            pillIcon: activePlayer ? (activePlayer.playbackState == MprisPlaybackState.Playing ? "play_arrow" : "pause") : ""
+        }
     }
 }

@@ -44,8 +44,13 @@ MouseArea {
         }
         StyledPopup {
             hoverTarget: indicator
-            animate: false
-            contentItem: PopupContent {}
+            contentItem: ColumnLayout {
+                spacing: 0
+
+                PopupContent {
+                    Layout.alignment: Qt.AlignHCenter
+                }
+            }
         }
     }
 
@@ -113,7 +118,6 @@ MouseArea {
     }
     
     component PopupContent: HeroCard {
-        anchors.centerIn: parent
         compactMode: true
         icon: "screen_record"
 

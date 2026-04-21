@@ -101,6 +101,7 @@ Scope {
             implicitHeight: playerColumnLayout.implicitHeight
             color: "transparent"
             WlrLayershell.namespace: "quickshell:mediaControls"
+            property real animProgress: 0.0
             
             readonly property var rect: Persistent.states.media.popupRect
             readonly property real barThickness: {
@@ -109,6 +110,63 @@ Scope {
                 } else {
                     return Config.options.bar.sizes.height || 40;
                 }
+            }
+            readonly property Item firstVisibleChild: {
+                for (let i = 0; i < playerColumnLayout.children.length; ++i) {
+                    const child = playerColumnLayout.children[i];
+                    if (!child || !child.visible)
+                        continue;
+
+                    const childHeight = child.implicitHeight || child.height || 0;
+                    if (childHeight > 0)
+                        return child;
+                }
+
+                return null;
+            }
+            readonly property real targetContentHeight: playerColumnLayout.implicitHeight
+            readonly property real collapsedContentHeight: {
+                if (targetContentHeight <= 0)
+                    return 0;
+
+                const firstHeight = firstVisibleChild ? (firstVisibleChild.implicitHeight || firstVisibleChild.height || 0) : 0;
+                if (firstHeight > 0 && targetContentHeight > firstHeight)
+                    return firstHeight;
+
+                return Math.max(96, targetContentHeight * 0.58);
+            }
+            function applyEntranceAnimation() {
+                for (let i = 0; i < playerColumnLayout.children.length; ++i) {
+                    const child = playerColumnLayout.children[i];
+                    if (!child || !child.visible)
+                        continue;
+
+                    const childHeight = child.implicitHeight || child.height || 0;
+                    if (childHeight <= 0)
+                        continue;
+
+                    child.opacity = Qt.binding(() => {
+                        const normalizedDelay = child.y / Math.max(1, playerColumnLayout.implicitHeight);
+                        const progress = (panelWindow.animProgress - normalizedDelay) / Math.max(0.001, 1.0 - normalizedDelay);
+                        return Math.max(0, Math.min(1.0, progress));
+                    });
+
+                    child.scale = Qt.binding(() => {
+                        const normalizedDelay = child.y / Math.max(1, playerColumnLayout.implicitHeight);
+                        const progress = (panelWindow.animProgress - normalizedDelay) / Math.max(0.001, 1.0 - normalizedDelay);
+                        return 0.85 + (0.15 * Math.max(0, Math.min(1.0, progress)));
+                    });
+                }
+            }
+
+            NumberAnimation on animProgress {
+                id: openAnim
+                from: 0
+                to: 1
+                running: true
+                duration: Appearance.animation.elementMove.duration
+                easing.type: Appearance.animation.elementMove.type
+                easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
             }
             anchors {
                 top: true
@@ -150,9 +208,7 @@ Scope {
                 }
             }
 
-            mask: Region {
-                item: playerColumnLayout
-            }
+            mask: Region { item: contentClip }
 
             Component.onCompleted: {
                 GlobalFocusGrab.addDismissable(panelWindow);
@@ -167,84 +223,98 @@ Scope {
                 }
             }
 
-            ColumnLayout {
-                id: playerColumnLayout
-                anchors.fill: parent
-                spacing: -Appearance.sizes.elevationMargin // Shadow overlap okay
+            Item {
+                id: contentClip
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                height: panelWindow.collapsedContentHeight + (panelWindow.targetContentHeight - panelWindow.collapsedContentHeight) * panelWindow.animProgress
+                clip: true
 
-                Repeater {
-                    model: ScriptModel {
-                        values: root.meaningfulPlayers
-                    }
-                    delegate: root.compactMode ? playerControlCompact : playerControl
-                }
+                ColumnLayout {
+                    id: playerColumnLayout
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    spacing: -Appearance.sizes.elevationMargin // Shadow overlap okay
 
-                Component {
-                    id: playerControl
+                    Component.onCompleted: panelWindow.applyEntranceAnimation()
+                    onChildrenChanged: panelWindow.applyEntranceAnimation()
 
-                    PlayerControl {
-                        required property MprisPlayer modelData
-                        player: modelData
-                        visualizerPoints: root.visualizerPoints
-                        implicitWidth: root.widgetWidth
-                        implicitHeight: root.widgetHeight
-                        radius: root.popupRounding
-                    }
-                }
-
-                Component {
-                    id: playerControlCompact
-
-                    PlayerControlCompact {
-                        required property MprisPlayer modelData
-                        player: modelData
-                        visualizerPoints: root.visualizerPoints
-                        implicitWidth: root.widgetWidth
-                        implicitHeight: root.widgetHeight
-                        radius: root.popupRounding
-                    }
-                }
-
-                Item {
-                    // No player placeholder
-                    Layout.alignment: {
-                        if (panelWindow.anchors.left)
-                            return Qt.AlignLeft;
-                        if (panelWindow.anchors.right)
-                            return Qt.AlignRight;
-                        return Qt.AlignHCenter;
-                    }
-                    Layout.leftMargin: Appearance.sizes.hyprlandGapsOut
-                    Layout.rightMargin: Appearance.sizes.hyprlandGapsOut
-                    visible: root.meaningfulPlayers.length === 0
-                    implicitWidth: placeholderBackground.implicitWidth + Appearance.sizes.elevationMargin
-                    implicitHeight: placeholderBackground.implicitHeight + Appearance.sizes.elevationMargin
-
-                    StyledRectangularShadow {
-                        target: placeholderBackground
+                    Repeater {
+                        model: ScriptModel {
+                            values: root.meaningfulPlayers
+                        }
+                        delegate: root.compactMode ? playerControlCompact : playerControl
                     }
 
-                    Rectangle {
-                        id: placeholderBackground
-                        anchors.centerIn: parent
-                        color: Appearance.colors.colLayer0
-                        radius: root.popupRounding
-                        property real padding: 20
-                        implicitWidth: placeholderLayout.implicitWidth + padding * 2
-                        implicitHeight: placeholderLayout.implicitHeight + padding * 2
+                    Component {
+                        id: playerControl
 
-                        ColumnLayout {
-                            id: placeholderLayout
+                        PlayerControl {
+                            required property MprisPlayer modelData
+                            player: modelData
+                            visualizerPoints: root.visualizerPoints
+                            implicitWidth: root.widgetWidth
+                            implicitHeight: root.widgetHeight
+                            radius: root.popupRounding
+                        }
+                    }
+
+                    Component {
+                        id: playerControlCompact
+
+                        PlayerControlCompact {
+                            required property MprisPlayer modelData
+                            player: modelData
+                            visualizerPoints: root.visualizerPoints
+                            implicitWidth: root.widgetWidth
+                            implicitHeight: root.widgetHeight
+                            radius: root.popupRounding
+                        }
+                    }
+
+                    Item {
+                        // No player placeholder
+                        Layout.alignment: {
+                            if (panelWindow.anchors.left)
+                                return Qt.AlignLeft;
+                            if (panelWindow.anchors.right)
+                                return Qt.AlignRight;
+                            return Qt.AlignHCenter;
+                        }
+                        Layout.leftMargin: Appearance.sizes.hyprlandGapsOut
+                        Layout.rightMargin: Appearance.sizes.hyprlandGapsOut
+                        visible: root.meaningfulPlayers.length === 0
+                        implicitWidth: placeholderBackground.implicitWidth + Appearance.sizes.elevationMargin
+                        implicitHeight: placeholderBackground.implicitHeight + Appearance.sizes.elevationMargin
+
+                        StyledRectangularShadow {
+                            target: placeholderBackground
+                        }
+
+                        Rectangle {
+                            id: placeholderBackground
                             anchors.centerIn: parent
+                            color: Appearance.colors.colLayer0
+                            radius: root.popupRounding
+                            property real padding: 20
+                            implicitWidth: placeholderLayout.implicitWidth + padding * 2
+                            implicitHeight: placeholderLayout.implicitHeight + padding * 2
 
-                            StyledText {
-                                text: Translation.tr("No active player")
-                                font.pixelSize: Appearance.font.pixelSize.large
-                            }
-                            StyledText {
-                                color: Appearance.colors.colSubtext
-                                text: Translation.tr("Make sure your player has MPRIS support\nor try turning off duplicate player filtering")
-                                font.pixelSize: Appearance.font.pixelSize.small
+                            ColumnLayout {
+                                id: placeholderLayout
+                                anchors.centerIn: parent
+
+                                StyledText {
+                                    text: Translation.tr("No active player")
+                                    font.pixelSize: Appearance.font.pixelSize.large
+                                }
+                                StyledText {
+                                    color: Appearance.colors.colSubtext
+                                    text: Translation.tr("Make sure your player has MPRIS support\nor try turning off duplicate player filtering")
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                }
                             }
                         }
                     }

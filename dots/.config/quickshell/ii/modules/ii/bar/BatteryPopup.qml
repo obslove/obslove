@@ -18,27 +18,30 @@ StyledPopup {
             return `${m}m`;
     }
 
-    animate: false
-    contentItem: HeroCard {
-        id: mediaHero
-        compactMode: true
-        anchors.centerIn: parent
-        icon: "battery_android_full"
+    contentItem: ColumnLayout {
+        spacing: 0
 
-        title: {
-            if (Battery.chargeState == 4) {
-                return Translation.tr("Fully charged");
-            } else if (Battery.chargeState == 1) {
-                return Translation.tr("Charging:") + ` ${Battery.energyRate.toFixed(2)}W`;
-            } else {
-                return Translation.tr("Discharging:") + ` ${Battery.energyRate.toFixed(2)}W`;
+        HeroCard {
+            id: batteryHero
+            Layout.alignment: Qt.AlignHCenter
+            compactMode: true
+            icon: "battery_android_full"
+
+            title: {
+                if (Battery.chargeState == 4) {
+                    return Translation.tr("Fully charged");
+                } else if (Battery.chargeState == 1) {
+                    return Translation.tr("Charging:") + ` ${Battery.energyRate.toFixed(2)}W`;
+                } else {
+                    return Translation.tr("Discharging:") + ` ${Battery.energyRate.toFixed(2)}W`;
+                }
             }
-        }
-        subtitle: { 
-            Battery.isCharging ? Translation.tr("Time to full:") + ` ${formatTime(Battery.timeToFull)}` : Translation.tr("Time to empty:") + ` ${formatTime(Battery.timeToEmpty)}`;
-        }
+            subtitle: Battery.isCharging
+                ? Translation.tr("Time to full:") + ` ${formatTime(Battery.timeToFull)}`
+                : Translation.tr("Time to empty:") + ` ${formatTime(Battery.timeToEmpty)}`
 
-        pillText: `${(Battery.health).toFixed(1)}%`
-        pillIcon: "battery_android_full"
+            pillText: `${Battery.health.toFixed(1)}%`
+            pillIcon: "battery_android_full"
+        }
     }
 }

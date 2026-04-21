@@ -11,19 +11,23 @@ import qs.modules.ii.bar
 StyledPopup {
     id: root
     popupRadius: Appearance.rounding.large
-    contentItem: HeroCard {
-        id: weatherHero
-        anchors.centerIn: parent
-        implicitWidth: 340
-        implicitHeight: 176
-        margins: 16
-        iconSize: 104
-        icon: Icons.getWeatherIcon(Weather.data.wCode)
-        pillText: Weather.data.city || "--"
-        pillIcon: Weather.data.city ? "location_on" : ""
-        title: Weather.data.temp
-        subtitle: Weather.data.wDesc
-        titleSize: Math.round(Appearance.font.pixelSize.hugeass * 1.75)
-        subtitleSize: Appearance.font.pixelSize.large
+    contentItem: ColumnLayout {
+        spacing: 0
+
+        HeroCard {
+            id: weatherHero
+            Layout.alignment: Qt.AlignHCenter
+            implicitWidth: 340
+            implicitHeight: 176
+            margins: 16
+            iconSize: 104
+            icon: Icons.getWeatherIcon(Weather.data.wCode)
+            pillText: Weather.data.city || "--"
+            pillIcon: Weather.data.city ? "location_on" : ""
+            title: Weather.data.temp
+            subtitle: Weather.data.wDesc
+            titleSize: Math.round(Appearance.font.pixelSize.hugeass * 1.75)
+            subtitleSize: Appearance.font.pixelSize.large
+        }
     }
 }
