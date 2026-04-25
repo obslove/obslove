@@ -14,6 +14,7 @@ ContentPage {
 
     property var componentMap: ({
         "active_window": activeWindow,
+        "date": dateSettings,
         "music_player": musicPlayer,
         "utility_buttons": utilityButtons,
         "system_tray": systemTray,
@@ -62,6 +63,57 @@ ContentPage {
                 onUpdated: (newList) => {
                     Config.options.bar.layouts.right = newList
                 }
+            }
+        }
+    }
+
+    ContentSection {
+        id: dateSettings
+        icon: "calendar_month"
+        title: Translation.tr("Date")
+
+        ContentSubsection {
+            title: Translation.tr("Layout")
+
+            ConfigSelectionArray {
+                currentValue: Config.options.bar.date.layout
+                onSelected: newValue => {
+                    Config.options.bar.date.layout = newValue;
+                }
+                options: [
+                    {
+                        displayName: Translation.tr("Stacked"),
+                        icon: "vertical_distribute",
+                        value: "stacked"
+                    },
+                    {
+                        displayName: Translation.tr("Minimal"),
+                        icon: "short_text",
+                        value: "minimal"
+                    }
+                ]
+            }
+        }
+
+        ContentSubsection {
+            title: Translation.tr("Format")
+            tooltip: Translation.tr("Changes the date format in the bar")
+
+            ConfigSelectionArray {
+                currentValue: Config.options.time.dateFormat
+                onSelected: newValue => {
+                    Config.options.time.dateFormat = newValue;
+                }
+                options: [
+                    {
+                        displayName: Translation.tr("Date First dd/MM"),
+                        value: "ddd dd/MM"
+                    },
+                    {
+                        displayName: Translation.tr("Month First MM/dd"),
+                        value: "ddd MM/dd"
+                    }
+                ]
             }
         }
     }

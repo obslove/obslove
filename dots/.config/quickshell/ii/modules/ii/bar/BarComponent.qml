@@ -33,11 +33,12 @@ Item {
         "music_player": [musicPlayerComp, musicPlayerCompVert],
         "system_monitor": [systemMonitorComp, systemMonitorCompVert],
         "clock": [clockComp, clockCompVert],
+        "clock_only": [clockOnlyComp, clockOnlyCompVert],
         "battery": [batteryComp, batteryCompVert],
         "utility_buttons": [utilityButtonsComp, utilityButtonsComp],
         "system_tray": [systemTrayComp, systemTrayComp],
         "active_window": [activeWindowComp, activeWindowComp],
-        "date": [dateCompVert, dateCompVert],
+        "date": [dateComp, dateCompVert],
         "record_indicator": [recordIndicatorComp, recordIndicatorComp],
         "screen_share_indicator": [screenshareIndicatorComp, screenshareIndicatorComp],
         "timer": [timerComp, timerCompVert],
@@ -100,7 +101,14 @@ Item {
         Loader {
             id: itemLoader
             active: true
-            sourceComponent: compMap[modelData.id][vertical ? 1 : 0]
+            sourceComponent: {
+                if (modelData.id === "date") {
+                    if (vertical)
+                        return dateCompVert;
+                    return Config.options.bar.date.layout === "stacked" ? dateCompVert : dateComp;
+                }
+                return compMap[modelData.id][vertical ? 1 : 0];
+            }
         }
     }
 
@@ -129,9 +137,12 @@ Item {
 
     Component { id: clockCompVert; Vertical.VerticalClockWidget {} }
     Component { id: clockComp; ClockWidget {} }
+    Component { id: clockOnlyCompVert; Vertical.VerticalClockWidget {} }
+    Component { id: clockOnlyComp; ClockOnlyWidget {} }
 
     Component { id: systemTrayComp; SysTray { vertical: rootItem.vertical } }
 
+    Component { id: dateComp; DateWidget {} }
     Component { id: dateCompVert; Vertical.VerticalDateWidget {} }
 
     Component { id: workspaceComp; Workspaces { vertical: rootItem.vertical } }

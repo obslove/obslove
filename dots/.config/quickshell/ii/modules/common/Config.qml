@@ -310,6 +310,9 @@ Singleton {
                 property int barBackgroundStyle: 1 // 0: Transparent | 1: Visible | 2: Adaptive
                 property bool verbose: true
                 property bool vertical: false
+                property JsonObject date: JsonObject {
+                    property string layout: "stacked" // stacked | minimal
+                }
 
                 property JsonObject mediaPlayer: JsonObject {
                     property bool useFixedSize: false
