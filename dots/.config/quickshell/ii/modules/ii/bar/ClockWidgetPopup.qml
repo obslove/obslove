@@ -10,7 +10,7 @@ StyledPopup {
     popupRadius: Appearance.rounding.large
 
     property string formattedDate: Qt.locale().toString(DateTime.clock.date, "MMMM dd, dddd")
-    property string formattedTime: DateTime.time
+    property string formattedTime: DateTime.formatTime()
     property string formattedUptime: DateTime.uptime
     property string todosSection: getUpcomingTodos(Todo.list)
     property bool todosEmpty: todosSection === ""

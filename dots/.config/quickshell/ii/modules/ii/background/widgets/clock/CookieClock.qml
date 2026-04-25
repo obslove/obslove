@@ -27,7 +27,7 @@ Item {
     property color colMinuteHand: Appearance.colors.colTertiary
     property color colSecondHand: Appearance.colors.colPrimary
 
-    readonly property list<string> clockNumbers: DateTime.time.split(/[: ]/)
+    readonly property list<string> clockNumbers: DateTime.formatTime().split(/[: ]/)
     readonly property int clockHour: parseInt(clockNumbers[0]) % 12
     readonly property int clockMinute: DateTime.clock.minutes
     readonly property int clockSecond: DateTime.clock.seconds

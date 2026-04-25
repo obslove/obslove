@@ -7,7 +7,7 @@ import QtQuick
 
 Column {
     id: root
-    property list<string> clockNumbers: DateTime.time.split(/[: ]/)
+    property list<string> clockNumbers: DateTime.formatTime().split(/[: ]/)
     property bool isEnabled: Config.options.background.widgets.clock.cookie.timeIndicators
     property color color: Appearance.colors.colOnSecondaryContainer
 

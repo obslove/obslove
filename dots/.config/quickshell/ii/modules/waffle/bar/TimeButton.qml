@@ -30,7 +30,7 @@ BarButton {
                 anchors.verticalCenter: parent.verticalCenter
                 WText {
                     anchors.right: parent.right
-                    text: DateTime.time
+                    text: DateTime.formatTime()
                 }
                 WText {
                     anchors.right: parent.right
@@ -50,6 +50,6 @@ BarButton {
     BarToolTip {
         id: tooltip
         extraVisibleCondition: root.shouldShowTooltip
-        text: `${Qt.locale().toString(DateTime.clock.date, "dddd, MMMM d, yyyy")}\n\n${Qt.locale().toString(DateTime.clock.date, "ddd hh:mm AP")}`
+        text: `${Qt.locale().toString(DateTime.clock.date, "dddd, MMMM d, yyyy")}\n\n${Qt.locale().toString(DateTime.clock.date, "ddd")} ${DateTime.formatTime()}`
     }
 }

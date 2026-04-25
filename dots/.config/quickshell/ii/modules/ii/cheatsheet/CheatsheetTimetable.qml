@@ -260,7 +260,7 @@ Item {
                     StyledText {
                         id: timeHeaderText
                         anchors.centerIn: parent
-                        text: DateTime.time
+                        text: DateTime.formatTime()
                         font.weight: Font.Medium
                         color: Appearance.colors.colOnPrimary
                         elide: Text.ElideRight
@@ -510,7 +510,7 @@ Item {
                     Text {
                         id: timeText
                         anchors.centerIn: parent
-                        text: DateTime.time
+                        text: DateTime.formatTime()
                         color: Appearance.colors.colOnPrimary
                         font.weight: Font.Medium
                         elide: Text.ElideRight
@@ -520,4 +520,3 @@ Item {
         }
     }
 }
-

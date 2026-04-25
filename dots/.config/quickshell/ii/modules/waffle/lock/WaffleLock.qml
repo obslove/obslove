@@ -211,10 +211,9 @@ LockScreen {
             font.pixelSize: 133
             font.weight: Looks.font.weight.strong
             text: {
-                // Don't take am/pm
-                // Match groups of digits separated by non-digit chars (e.g., "12:34", "12.34", "12-34")
-                let match = DateTime.time.match(/(\d{1,2})\D+(\d{2})/);
-                return match ? `${match[1]}${DateTime.time.match(/\D+/)[0]}${match[2]}` : DateTime.time;
+                const formatted = DateTime.formatTime();
+                const match = formatted.match(/(\d{1,2})(\D+)(\d{2})(?:\D+(\d{2}))?/);
+                return match ? `${match[1]}${match[2]}${match[3]}${match[4] ? `${match[2]}${match[4]}` : ""}` : formatted;
             }
         }
 

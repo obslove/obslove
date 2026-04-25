@@ -71,7 +71,7 @@ Rectangle {
         Layout.leftMargin: 8
         Layout.rightMargin: 6
 
-        text: DateTime.time
+        text: DateTime.formatTime()
         color: Appearance.colors.colOnSurface
         font {
             family: Appearance.font.family.numbers
