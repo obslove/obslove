@@ -67,8 +67,15 @@ ContentPage {
     ContentSection {  
         icon: "battery_android_full"  
         title: Translation.tr("Battery")  
+
+        NoticeBox {
+            visible: !Battery.available
+            materialIcon: "battery_alert"
+            text: Translation.tr("No laptop battery detected on this device")
+        }
   
         ConfigRow {  
+            visible: Battery.available
             uniform: true  
             ConfigSpinBox {  
                 icon: "warning"  
@@ -94,6 +101,7 @@ ContentPage {
             }  
         }  
         ConfigRow {  
+            visible: Battery.available
             uniform: false  
             Layout.fillWidth: false  
             ConfigSwitch {  
@@ -120,6 +128,7 @@ ContentPage {
             }  
         }  
         ConfigRow {  
+            visible: Battery.available
             uniform: true  
             ConfigSpinBox {  
                 icon: "charger"  
